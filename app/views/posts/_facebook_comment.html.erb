@@ -1,0 +1,28 @@
+<% edge_object.fbid %>
+<li>
+  <a href="https://facebook.com/<%= edge_object.authored_by.fbid %>"><%= edge_object.authored_by.payload[:display_name] %></a>:
+  <% if edge_object.payload[:body] && edge_object.payload[:body][:text] %>
+    <%
+      comment_payload = edge_object.payload[:body]
+      comment_text = comment_payload[:text]
+      comment_payload[:ranges].reverse.each do |range|
+        if range[:__typename] == "EntityAtRange"
+          if range[:entity][:__typename] == 'User'
+            comment_text[(range[:offset])..(range[:offset] + range[:length]- 1)] = "<a href=\"https://facebook.com/#{range[:entity][:id]}\">#{comment_text[(range[:offset])..(range[:offset] + range[:length]- 1)]}</a>"
+          end
+        end
+      end
+
+    %>
+    <%= raw(comment_text.gsub("\n", '<br />')) %>
+  <% else %>
+    <%= edge_object.authored_by.payload[:body] %>
+  <% end %>
+  <% if edge_object.edge_comments.count > 0  %>
+    <ul>
+      <% edge_object.edge_comments.each do |s_edge|  %>
+        <%= render "posts/facebook_comment", edge_object: FBID.where(fbid: s_edge.to).first  %>
+      <% end %>
+    </ul>
+  <% end %>
+</li>
