@@ -1,3 +1,3 @@
 class InstagramStory < ActiveRecord::Base
-  establish_connection :development
+  establish_connection :sociallink
 end

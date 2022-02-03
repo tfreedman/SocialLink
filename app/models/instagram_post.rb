@@ -1,3 +1,3 @@
 class InstagramPost < ActiveRecord::Base
-  establish_connection :development
+  establish_connection :sociallink
 end

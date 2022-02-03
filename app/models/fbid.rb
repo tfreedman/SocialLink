@@ -1,11 +1,10 @@
 class FBID < ActiveRecord::Base
+  establish_connection :sociallink
   has_many :to_edges, :foreign_key => 'from', :class_name => 'FBIDEdge'
   has_many :to_fbids, :through => :to_edges
 
   has_many :from_edges, :foreign_key => 'to', :class_name => 'FBIDEdge'
   has_many :from_fbids, :through => :from_edges
-
-  establish_connection :development
 
   serialize :reactions
   serialize :author_info

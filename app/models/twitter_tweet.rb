@@ -1,7 +1,7 @@
 class TwitterTweet < ActiveRecord::Base
   serialize :entries
   serialize :original_poster
-  establish_connection :development
+  establish_connection :sociallink
 
   serialize :reply_data
   serialize :quoting_data
