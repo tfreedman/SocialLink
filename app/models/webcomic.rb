@@ -1,3 +1,3 @@
-class Instagram < ActiveRecord::Base
+class Webcomic < ActiveRecord::Base
   establish_connection :development
 end

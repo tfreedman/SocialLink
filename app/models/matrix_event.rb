@@ -1,3 +1,3 @@
 class MatrixEvent < ActiveRecord::Base
-  establish_connection :iot
+  establish_connection :hindsight
 end

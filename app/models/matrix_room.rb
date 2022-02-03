@@ -1,4 +1,4 @@
 class MatrixRoom < ActiveRecord::Base
   serialize :participants
-  establish_connection :iot
+  establish_connection :hindsight
 end

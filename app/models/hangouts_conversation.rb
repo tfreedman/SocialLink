@@ -1,4 +1,5 @@
 class HangoutsConversation < ActiveRecord::Base
+  establish_connection :hindsight
   serialize :conversation_type
   serialize :self_conversation_state
   serialize :read_state

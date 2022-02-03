@@ -1,3 +1,3 @@
 class PixivPost < ActiveRecord::Base
-  establish_connection :iot
+  establish_connection :development
 end
