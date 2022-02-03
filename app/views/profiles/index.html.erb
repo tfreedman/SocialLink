@@ -1,0 +1,41 @@
+<section id="main">
+  <h1>Recently Updated Contacts (<%= @recently_updated.count %>)</h1>
+  <ul>
+    <% @recently_updated.each do |person| %>
+      <li>
+        <section class="profile">
+            <div class="photo <% if person[:recently_updated] %>recently-updated<% end %>">
+              <% if person[:vcard].photo && person[:vcard].photo[0].params["type"].downcase == "jpeg" && person[:vcard].photo[0].params["encoding"] == "b" %>
+                <img src="data:image/jpeg;base64, <%= person[:vcard].photo[0].value %>" />
+              <% else %>
+                <i class="fas fa-user-circle"></i>
+              <% end %>
+            </div>
+          <div class="info">
+            <a href="/profiles/<%= person[:uid] %>"><h1><%= person[:name] %></h1></a>
+          </div>
+        </section>
+      </li>
+    <% end %>
+  </ul>
+
+  <h1>All Contacts (<%= @all_people.count %>)</h1>
+  <ul id="all-contacts">
+    <% @all_people.each do |person| %>
+      <li data-updated="<%= person[:last_updated] %>" data-alphabetical="<%= person[:name][0] %>">
+        <section class="profile">
+            <div class="photo <% if person[:recently_updated] %>recently-updated<% end %>">
+              <% if person[:vcard].photo && person[:vcard].photo[0].params["type"].downcase == "jpeg" && person[:vcard].photo[0].params["encoding"] == "b" %>
+                <img src="data:image/jpeg;base64, <%= person[:vcard].photo[0].value %>" />
+              <% else %>
+                <i class="fas fa-user-circle"></i>
+              <% end %>
+            </div>
+          <div class="info">
+            <a href="/profiles/<%= person[:uid] %>"><h1><%= person[:name] %></h1></a>
+          </div>
+        </section>
+      </li>
+    <% end %>
+  </ul>
+</section>

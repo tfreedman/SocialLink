@@ -1,15 +1,271 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>SocialLink</title>
+    <title><%= @title %> - SocialLink</title>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
-    <%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload' %>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans|Quicksand:400,700" rel="stylesheet">
+    <%= stylesheet_link_tag 'application' %>
+    <%= javascript_pack_tag 'application' %>
   </head>
 
-  <body>
+  <body class="<%= @pagename %>">
     <%= yield %>
+
+    <script>
+      var postsContainer = document.querySelector('.profiles_show');
+
+      if (postsContainer) {
+      var services = {
+      <% @types.each_with_index do |type, index| %>
+        <% if index == @types.count - 1 %>
+          <% terminator = '' %>
+        <% else %>
+          <% terminator = ',' %>
+        <% end %>
+        <%= raw('"' + type + '": true') + terminator %>
+      <% end %>
+      };
+      var filterString = '';
+      var pageNumber = 1;
+      var filteredPageCount = 0;
+
+
+      function shrinkTitle() {
+        var textSpan = document.querySelector("h1 span");
+        var textDiv = document.querySelector("h1");
+
+        fontSize = 30;
+
+        while (textSpan.offsetWidth >= 180) {
+          fontSize = fontSize - 1;
+          textSpan.style.fontSize = fontSize + 'px';
+        }
+      }
+
+      if (<%= @pagename == "profiles_show" %>) {
+        shrinkTitle();
+      }
+
+      var getHTML = function ( url, callback ) {
+        if ( !window.XMLHttpRequest ) return;
+
+        var xhr = new XMLHttpRequest();
+
+        xhr.onload = function() {
+          if ( callback && typeof( callback ) === 'function' ) {
+            callback(this);
+          }
+        }
+
+        xhr.open( 'GET', url );
+        xhr.responseType = 'document';
+        xhr.send();
+      };
+
+      document.addEventListener('change', function (event) {
+        if (!event.target.hasAttribute('id')) return;
+      
+        serviceLabel = event.target.getAttribute('id');
+
+        elements = document.getElementsByClassName(serviceLabel);
+        if (!('serviceLabel' in services) && services[serviceLabel] == false) {
+          services[serviceLabel] = true
+        } else {
+          services[serviceLabel] = false
+        }
+        for (var i = 0; i < elements.length; i++) {
+          elements[i].style.display = services[serviceLabel] == false ? 'none' : 'block';
+        }
+        generateFilterString();
+        pageNumber = 1;
+
+        getPosts(filterString, pageNumber);
+      }, false);
+
+      if (document.readyState !== 'loading') {
+        ready();
+      } else {
+        document.addEventListener('DOMContentLoaded', ready);
+      }
+
+      function generateFilterString() {
+        filterString = '';
+        for (const [key, value] of Object.entries(services)) {
+          if (value === true) {
+            filterString = filterString + 'filters[types][]=' + key + '&';
+          }
+        }
+      }
+
+      function ready() {
+        var accordion = document.getElementsByTagName("dt");
+
+        for (var i = 0; i<accordion.length; i++){
+          accordion[i].addEventListener('click', function(){
+            accordionClick(event);
+          });
+        }
+      }
+
+      var postsContainer = document.querySelector('.profiles_show .posts .posts-container');
+
+      function showLoadingSpinner() {
+        document.querySelector('#loading-spinner').style.display = 'flex';
+      }
+
+      function hideLoadingSpinner() {
+        document.querySelector('#loading-spinner').style.display = 'none';
+      }
+
+      function getPosts(filterString, pageNumber) {
+        qSA = document.querySelectorAll('.pagination');
+        qSA.forEach(t => {
+          t.style.display = 'none';
+        });
+        qSA = document.querySelectorAll('.services input');
+        qSA.forEach(t => {
+          t.disabled = true;
+        });
+        postsContainer.style.display = 'none';
+        showLoadingSpinner();
+        getHTML( window.location.href + '/posts?' + filterString + '&page=' + pageNumber, function (response) {
+          filteredPageCount = response.getResponseHeader('filtered-page-count')
+  
+          postsContainer.innerHTML = response.responseXML.documentElement.innerHTML;
+          redrawPageNumbers();
+          hideLoadingSpinner();
+          postsContainer.style.display = 'block';
+          qSA = document.querySelectorAll('.services input');
+          qSA.forEach(t => {
+            t.disabled = false;
+          });
+          qSA = document.querySelectorAll('.pagination');
+          qSA.forEach(t => {
+            t.style.display = 'inline';
+          });
+        });
+        window.scrollTo(0,0);
+      }
+      getPosts(filterString, pageNumber);
+
+      function redrawPageNumbers() {
+        tPN = document.querySelectorAll('.totalPageNumber');
+        tPN.forEach(t => {
+          t.innerHTML = filteredPageCount;
+        });
+
+        cPN = document.querySelectorAll('.currentPageNumber');
+        cPN.forEach(c => {
+          c.innerHTML = pageNumber;
+        });
+
+        if (pageNumber == 1) {
+          pageBack = document.querySelectorAll('.page-back, .page-back-end');
+          pageBack.forEach(back => {
+            back.style.display = 'none';
+          });
+        } else {
+          pageBack = document.querySelectorAll('.page-back, .page-back-end')
+          pageBack.forEach(back => {
+            back.style.display = 'inline';
+          });
+        }
+
+        if (pageNumber == filteredPageCount) {
+          pageForward = document.querySelectorAll('.page-forward, .page-forward-end');
+          pageForward.forEach(forward => {
+            forward.style.display = 'none';
+          });
+
+        } else {
+          pageForward = document.querySelectorAll('.page-forward, .page-forward-end');
+          pageForward.forEach(forward => {
+            forward.style.display = 'inline';
+          });
+        }
+      }
+
+      qSA = document.querySelectorAll('.page-back-end')
+      qSA.forEach(q => {
+        q.addEventListener('click', function (event) {
+          event.preventDefault();
+          pageNumber = 1;
+          redrawPageNumbers();
+          getPosts(filterString, pageNumber);
+        }, false);
+      });
+
+      qSA = document.querySelectorAll('.page-back')
+      qSA.forEach(q => {
+        q.addEventListener('click', function (event) {
+          event.preventDefault();
+          pageNumber = pageNumber - 1;
+          redrawPageNumbers();
+          getPosts(filterString, pageNumber);
+        }, false);
+      });
+
+      qSA = document.querySelectorAll('.page-forward')
+      qSA.forEach(q => {
+        q.addEventListener('click', function (event) {
+          event.preventDefault();
+          pageNumber = pageNumber + 1;
+          redrawPageNumbers();
+          getPosts(filterString, pageNumber);
+        }, false);
+      });
+
+      qSA = document.querySelectorAll('.calendar-page')
+      qSA.forEach(q => {
+        q.addEventListener('click', function (event) {
+          event.preventDefault();
+          console.log(event);
+          pageNumber = parseInt(event.originalTarget.dataset.page);
+          redrawPageNumbers();
+          getPosts(filterString, pageNumber);
+        }, false);
+      });
+
+      qSA = document.querySelectorAll('.page-forward-end')
+        qSA.forEach(q => {
+          q.addEventListener('click', function (event) {
+          event.preventDefault();
+          pageNumber = filteredPageCount;
+          redrawPageNumbers();
+          getPosts(filterString, pageNumber);
+        }, false);
+      });
+
+      var accordionClick = (eventHappened) => {
+          var targetClicked =event.target;
+          var classClicked = targetClicked.classList;
+          while ((classClicked[0] !="description-title")){
+              targetClicked = targetClicked.parentElement;
+              classClicked = targetClicked.classList;
+          }
+          var description = targetClicked.nextElementSibling;
+          var expander = targetClicked.children[0];
+          if (description.style.maxHeight){
+              description.style.maxHeight = null;
+              expander.innerHTML = "&#10133;"
+
+          }
+          else {
+              var allDescriptions = document.getElementsByTagName("dd");
+              for (var i = 0; i < allDescriptions.length; i++){
+                  if (allDescriptions[i].style.maxHeight){
+                      allDescriptions[i].style.maxHeight = null;
+                      allDescriptions[i].previousElementSibling.children[0].innerHTML = "&#10133;"
+                  }
+              }
+              description.style.maxHeight = description.scrollHeight + "px";
+              expander.innerHTML = "&#10134;";
+
+          }
+      }
+      }
+    </script>
   </body>
 </html>
