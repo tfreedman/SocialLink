@@ -1,0 +1,15 @@
+<section id="main">
+  <ul class="posts">
+    <div class="posts-container">
+      <li>
+        <% if ['facebook_post', 'facebook_photos', 'facebook_photos_of', 'facebook_post_authored', 'facebook_album'].include?(@post[:type]) %>
+          <%= render :partial => 'facebook_post', locals: {post: @post, person: @person, details: true} %>
+        <% elsif ['pixiv'].include?(@post[:type]) %>
+          <%= render :partial => 'pixiv', locals: {post: @post, person: @person, details: true} %>
+        <% else %>
+          <p>No partial for <%= @post[:type] %></p>
+        <% end %>
+      </li>
+    </div>
+  </ul>
+</section>
