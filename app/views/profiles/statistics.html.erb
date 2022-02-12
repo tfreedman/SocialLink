@@ -1,0 +1,146 @@
+<section id="main">
+  <h1>Statistics</h1>
+  <% if @timestamps %>
+    <ul>
+      <li>Colloquy: <%= Time.at(@timestamps[:colloquy][0]) %> - <%= Time.at(@timestamps[:colloquy][-2]) %></li>
+      <li>MamIRC: <%= Time.at(@timestamps[:mamirc][0] / 1000) %> - <%= Time.at(@timestamps[:mamirc][-1] / 1000) %></li>
+      <li>Hangouts: <%= Time.at(@timestamps[:hangouts][0] / 1000000) %> - <%= Time.at(@timestamps[:hangouts][-1] / 1000000) %></li>
+      <li>Facebook Messenger: <%= Time.at(@timestamps[:facebook_messenger][0] / 1000) %> - <%= Time.at(@timestamps[:facebook_messenger][-1] / 1000) %></li>
+      <li>Windows Phone: <%= Time.at(@timestamps[:windows_phone][1]) %> - <%= Time.at(@timestamps[:windows_phone][-1]) %></li>
+      <li>Pidgin: <%= Time.at(@timestamps[:pidgin][1]) %> - <%= Time.at(@timestamps[:pidgin][-1]) %></li>
+    </ul>
+  <% end %>
+
+  <% if @dfp[:facebook_messenger] %>
+    <p>The following Facebook Messenger 1:1 conversations have no contact cards pointing to them:</p>
+    <ul>
+      <% @dfp[:facebook_messenger].each do |service| %>
+        <li><%= service[:name] %> (<%= service[:room] %>)</li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <% if @dfp[:instagram_posts] %>
+    <p>The following Instagram posts (<%= @dfp[:instagram_posts].count %>) don't point to assets on disk:</p>
+    <ul>
+      <% @dfp[:instagram_posts].each do |key, value| %>
+        <li><%= key %>|<%= value %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <% if @dbp[:instagram_posts] %>
+    <p>The following Instagram assets (<%= @dbp[:instagram_posts].count %>) don't point to DB entries:</p>
+    <ul>
+      <% @dbp[:instagram_posts].each do |key, value| %>
+        <li><%= value %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <% if @dfp[:matrix] %>
+    <p>The following Matrix rooms have no pointers to them:</p>
+    <ul>
+      <% @dfp[:matrix].each do |name| %>
+        <% if !name.start_with?('@') %>
+          <li><%= name %></li>
+        <% end %>
+      <% end %>
+    </ul>
+
+    <p>The following Matrix contacts have no pointers to them:</p>
+    <ul>
+      <% @dfp[:matrix].each do |name| %>
+        <% if name.start_with?('@') %>
+          <li><%= name %></li>
+        <% end %>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <% if @dfp[:windows_phone] %>
+    <p>The following Windows Phone conversations have no contact cards pointing to them:</p>
+    <ul>
+      <% @dfp[:windows_phone].each do |name| %>
+        <li><%= name %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <% if @dfp[:colloquy] %>
+    <p>The following Colloquy conversations have no contact cards pointing to them:</p>
+    <ul>
+      <% @dfp[:colloquy].each do |name| %>
+        <li><%= name %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <% if @dfp[:pidgin] %>
+    <p>The following Pidgin conversations have no contact cards pointing to them:</p>
+    <ul>
+      <% @dfp[:pidgin].each do |name| %>
+        <li><%= name %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <% if @dfp[:mamirc] %>
+    <p>The following MamIRC conversations have no contact cards pointing to them:</p>
+    <ul>
+      <% @dfp[:mamirc].each do |name| %>
+        <li><%= name %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <% if @dfp[:hangouts] %>
+    <p>The following Google Hangouts 1:1 conversations have no contact cards pointing to them:</p>
+    <ul>
+      <% @dfp[:hangouts].each do |service| %>
+        <li><%= service[:name] %> (<%= service[:conversation_id] %>)</li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <% if @bad_fb_contacts.keys.count > 0 %>
+    <p>The following contacts have incorrectly encoded (%3A) strings:</p>
+    <ul>
+      <% @bad_fb_contacts.each do |name| %>
+        <li><%= name[0] %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <% if @bad_uids %>
+    <p>The following contacts have non-filesystem-safe UIDs:</p>
+    <ul>
+      <% @bad_uids.each do |contact| %>
+        <li><%= contact[:name] %> (<%= contact[:uid] %>)</li>
+      <% end %>
+    </ul>
+  <% end %>
+
+
+  <% if @dfp[:folders] %>
+    <p>The following contacts have no folders backing them:</p>
+    <ul>
+      <% @dfp[:folders].each do |key, array| %>
+        <% if @dfp[:folders][key] == false %>
+          <li><%= key %></li>
+        <% end %>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <% if @dbp[:folders] %>
+    <p>The following folders have no contacts backing them:</p>
+    <ul>
+      <% @dbp[:folders].each do |key, array| %>
+        <% if @dbp[:folders][key] == false %>
+          <li><%= key %></li>
+        <% end %>
+      <% end %>
+    </ul>
+  <% end %>
+</section>

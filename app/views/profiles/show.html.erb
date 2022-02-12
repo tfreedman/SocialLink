@@ -1,0 +1,385 @@
+<%= @debug %>
+<section id="main">
+  <% if @person[:posts] %>
+    <aside>
+      <section class="profile">
+        <a href="/">
+          <% if @person[:vcard].photo && @person[:vcard].photo[0].params["type"].downcase == "jpeg" && @person[:vcard].photo[0].params["encoding"] == "b" %>
+            <%
+              photo_name = SecureRandom.uuid
+              File.open('/tmp/' + photo_name, 'wb') do |f|
+                f.write(Base64.decode64(@person[:photo]))
+              end
+              @colors = Miro::DominantColors.new('/tmp/' + photo_name)
+            %>
+            <div class="photo">
+              <img src="data:image/jpeg;base64, <%= @person[:photo] %>" />
+            </div>
+            <% bgcolor = RGB::Color.from_rgb_hex(@colors.to_hex[0]) %>
+            <style>
+              <% bgcolor.l = 0.5 if bgcolor.l > 0.5 %>
+              a, i.fa-spinner {color: <%= bgcolor.to_rgb_hex %> !important; fill: <%= bgcolor.to_rgb_hex %> !important;}
+            </style>
+            <% bgcolor.l = 0.9 %>
+            <style>body {background: linear-gradient(to right, <%= bgcolor.to_rgb_hex %> 0%, <%= bgcolor.to_rgb_hex %> 270px, #fafafa 270px, #fafafa 100%) repeat-y scroll 0 0 rgba(0, 0, 0, 0)}</style>
+          <% else %>
+            <style>
+              body {background: linear-gradient(to right, #ccd5ff 0%, #ccd5ff 270px, #fafafa 270px, #fafafa 100%) repeat-y scroll 0 0 rgba(0, 0, 0, 0)}
+              a, i.fa-spinner {color: #394fbe; fill: #394fbe}
+              
+            </style>
+            <% if @person[:name].start_with?('#') %>
+              <i class="fas fa-user-circle"></i>
+            <% else %>
+              <% #TODO: GROUP IMAGE %>
+              <i class="fas fa-user-circle"></i>
+            <% end %>
+          <% end %>
+        </a>
+        <div class="info">
+          <h1><span><%= @person[:name] %></span></h1>
+          <div class="icons">
+            <% if @person[:accounts] %>
+              <% @person[:accounts].each do |account| %>
+                <% if account[:service] == "youtube" %>
+                  <a href="<%= account[:url] %>"><i class="fab fa-youtube"></i></a>
+                <% elsif account[:service] == "webcomic" %>
+                  <% if account[:url] && account[:url].blank? %>
+                    <i class="fas fa-book-reader"></i>
+                  <% else %>
+                    <a href="<%= 'https://' + account[:url] %>"><i class="fas fa-book-reader"></i></a>
+                  <% end %>
+                <% elsif account[:service] == "matrix" %>
+                  <%= render :partial => 'posts/riot' %>
+                <% elsif account[:service] == "deviantart" %>
+                  <a href="<%= account[:url] %>"><i class="fab fa-deviantart"></i></a>
+                <% elsif account[:service] == "facebook" %>
+                  <a href="<%= account[:url] %>"><i class="fab fa-facebook"></i></a>
+                <% elsif account[:service] == "instagram" %>
+                  <a href="<%= account[:url] %>"><i class="fab fa-instagram"></i></a>
+                <% elsif account[:service] == "reddit" %>
+                  <a href="<%= account[:url] %>"><i class="fab fa-reddit"></i></a>
+                <% elsif account[:service] == "tumblr" %>
+                  <a href="<%= account[:url] %>"><i class="fab fa-tumblr"></i></a>
+                <% elsif account[:service] == "twitter" %>
+                  <a href="<%= account[:url] %>"><i class="fab fa-twitter"></i></a>
+                <% elsif account[:service] == "irc" %>
+                  <i class="fas fa-hashtag"></i>
+                <% elsif account[:service] == "pixiv" %>
+                  <a href="<%= account[:url] %>"><%= render :partial => 'profiles/pixiv' %></a>
+                <% elsif account[:service] == "hangouts" %>
+                  <%= render :partial => 'profiles/hangouts' %>
+                <% elsif account[:service] == "sms" %>
+                  <i class="fas fa-sms"></i>
+                <% end %>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+        <p><%= @person[:post_count] %> posts | <a href="<%= SocialLink::Application.credentials.address_book_url %><%= @person[:uid] %>~<%= @person[:address_book] %>">(edit)</a></p>
+      </section>
+
+      <div class="pagination">
+        <h3>Pagination:</h3>
+        <a class="page-back-end" href=""><i class="fas fa-angle-double-left"></i></a>
+        <a class="page-back" href=""><i class="fas fa-angle-left"></i></a>
+        Page <span class="currentPageNumber"><%= @page_number %></span> of <span class="totalPageNumber"><%= (@person[:post_count] / @pagination.to_f).ceil %></span>
+        <a class="page-forward" href=""><i class="fas fa-angle-right"></i></a>
+        <a class="page-forward-end" href=""><i class="fas fa-angle-double-right"></i></a>
+      </div>
+
+      <h3>Filter By:</h3>
+      <h4>Service:</h4>
+      <ul class="services">
+        <% if (@timeline[:service_counts]['facebook_message'].to_i + @timeline[:service_counts]['facebook_album'].to_i + @timeline[:service_counts]['facebook_post'].to_i + @timeline[:service_counts]['facebook_photo_of'].to_i + @timeline[:service_counts]['facebook_photo'].to_i) > 0 %>
+          <li>
+            <strong>Facebook:</strong>
+            <ul>
+              <% if @timeline[:service_counts]['facebook_message'] %>
+                <li data-service="facebook_message">
+                  <input autocomplete="off" type="checkbox" checked="true" id="facebook_message" /> <label for="facebook_message">Messenger (<%= @timeline[:service_counts]['facebook_message'] || 0 %>)</label>
+                </li> 
+              <% end %>
+  
+              <% if @timeline[:service_counts]['facebook_post'] %>
+                <li data-service="facebook_post">
+                  <input autocomplete="off" type="checkbox" checked="true" id="facebook_post" /> <label for="facebook_post">Posts (<%= @timeline[:service_counts]['facebook_post'] || 0 %>)</label>
+                </li>
+              <% end %>
+
+              <% if @timeline[:service_counts]['facebook_photo_of'] %>
+                <li data-service="facebook_photo_of">
+                  <input autocomplete="off" type="checkbox" checked="true" id="facebook_photo_of" /> <label for="facebook_photo_of">Photos Of (<%= @timeline[:service_counts]['facebook_photo_of'] || 0 %>)</label>
+                </li>
+              <% end %>
+
+              <% if @timeline[:service_counts]['facebook_photo'] %>
+                <li data-service="facebook_photo">
+                  <input autocomplete="off" type="checkbox" checked="true" id="facebook_photo" /> <label for="facebook_photo">Photos (<%= @timeline[:service_counts]['facebook_photo'] || 0 %>)</label>
+                </li>
+              <% end %>
+
+              <% if @timeline[:service_counts]['facebook_album'] %>
+                <li data-service="facebook_album">
+                  <input autocomplete="off" type="checkbox" checked="true" id="facebook_album" /> <label for="facebook_album">Albums (<%= @timeline[:service_counts]['facebook_album'] || 0 %>)</label>
+                </li>
+              <% end %>
+              <br />
+            </ul>
+          </li>
+        <% end %>
+
+        <% if (@timeline[:service_counts]['instagram_post'].to_i + @timeline[:service_counts]['instagram_story'].to_i) > 0 %>
+          <li>
+            <strong>Instagram:</strong>
+            <ul>
+              <% if @timeline[:service_counts]['instagram_post'] %>
+                <li data-service="instagram_post">
+                  <input autocomplete="off" type="checkbox" checked="true" id="instagram_post" /> <label for="instagram_post">Posts (<%= @timeline[:service_counts]['instagram_post'] || 0 %>)</label>
+                </li>
+              <% end %>
+
+              <% if @timeline[:service_counts]['instagram_story'] %>
+                <li data-service="instagram_story">
+                  <input autocomplete="off" type="checkbox" checked="true" id="instagram_story" /> <label for="instagram_story">Stories (<%= @timeline[:service_counts]['instagram_story'] || 0 %>)</label>
+                </li>
+              <% end %>
+              <br />
+            </ul>
+          </li>
+        <% end %>
+
+        <% if (@timeline[:service_counts]['tumblr_post-content--photo'].to_i + @timeline[:service_counts]['tumblr_post-content--text'].to_i + @timeline[:service_counts]['tumblr_post-content--answer'].to_i + 
+          @timeline[:service_counts]['tumblr_post-content--video'].to_i + @timeline[:service_counts]['tumblr_post-content--chat'].to_i + @timeline[:service_counts]['tumblr_post-content--quote'].to_i + 
+          @timeline[:service_counts]['tumblr_post-content--audio'].to_i + @timeline[:service_counts]['tumblr_post-content--link'].to_i + @timeline[:service_counts]['tumblr_post-content--iframe'].to_i + 
+          @timeline[:service_counts]['tumblr_post-content--note'].to_i) > 0 %>
+          <li>
+            <strong>Tumblr:</strong>
+            <ul>
+              <% if @timeline[:service_counts]['tumblr_post-content--photo'] %>
+                <li data-service="tumblr_post-content--photo">
+                  <input autocomplete="off" type="checkbox" checked="true" id="tumblr_post-content--photo" /> <label for="tumblr_post-content--photo">Photos (<%= @timeline[:service_counts]['tumblr_post-content--photo'] %>)</label>
+                </li>
+              <% end %>
+
+              <% if @timeline[:service_counts]['tumblr_post-content--text'] %>
+                <li data-service="tumblr_post-content--text">
+                  <input autocomplete="off" type="checkbox" checked="true" id="tumblr_post-content--text" /> <label for="tumblr_post-content--text">Texts (<%= @timeline[:service_counts]['tumblr_post-content--text'] %>)</label>
+                </li>
+              <% end %>
+
+              <% if @timeline[:service_counts]['tumblr_post-content--answer'] %>
+                <li data-service="tumblr_post-content--answer">
+                  <input autocomplete="off" type="checkbox" checked="true" id="tumblr_post-content--answer" /> <label for="tumblr_post-content--answer">Answers (<%= @timeline[:service_counts]['tumblr_post-content--answer'] %>)</label>
+                </li>
+              <% end %>
+
+              <% if @timeline[:service_counts]['tumblr_post-content--video'] %>
+                <li data-service="tumblr_post-content--video">
+                  <input autocomplete="off" type="checkbox" checked="true" id="tumblr_post-content--video" /> <label for="tumblr_post-content--video">Videos (<%= @timeline[:service_counts]['tumblr_post-content--video'] %>)</label>
+                </li>
+              <% end %>
+
+              <% if @timeline[:service_counts]['tumblr_post-content--chat'] %>
+                <li data-service="tumblr_post-content--chat">
+                  <input autocomplete="off" type="checkbox" checked="true" id="tumblr_post-content--chat" /> <label for="tumblr_post-content--chat">Chats (<%= @timeline[:service_counts]['tumblr_post-content--chat'] %>)</label>
+                </li>
+              <% end %>
+
+              <% if @timeline[:service_counts]['tumblr_post-content--quote'] %>
+                <li data-service="tumblr_post-content--quote">
+                  <input autocomplete="off" type="checkbox" checked="true" id="tumblr_post-content--quote" /> <label for="tumblr_post-content--quote">Quotes (<%= @timeline[:service_counts]['tumblr_post-content--quote'] %>)</label>
+                </li>
+              <% end %>
+
+              <% if @timeline[:service_counts]['tumblr_post-content--audio'] %>
+                <li data-service="tumblr_post-content--audio">
+                  <input autocomplete="off" type="checkbox" checked="true" id="tumblr_post-content--audio" /> <label for="tumblr_post-content--audio">Audio (<%= @timeline[:service_counts]['tumblr_post-content--audio'] %>)</label>
+                </li>
+              <% end %>
+
+              <% if @timeline[:service_counts]['tumblr_post-content--link'] %>
+                <li data-service="tumblr_post-content--link">
+                  <input autocomplete="off" type="checkbox" checked="true" id="tumblr_post-content--link" /> <label for="tumblr_post-content--link">Links (<%= @timeline[:service_counts]['tumblr_post-content--link'] %>)</label>
+                </li>
+              <% end %>
+
+              <% if @timeline[:service_counts]['tumblr_post-content--iframe'] %>
+                <li data-service="tumblr_post-content--iframe">
+                  <input autocomplete="off" type="checkbox" checked="true" id="tumblr_post-content--iframe" /> <label for="tumblr_post-content--iframe">IFrames (<%= @timeline[:service_counts]['tumblr_post-content--iframe'] %>)</label>
+                </li>
+              <% end %>
+  
+              <% if @timeline[:service_counts]['tumblr_post-content--note'] %>
+                <li data-service="tumblr_post-content--note">
+                  <input autocomplete="off" type="checkbox" checked="true" id="tumblr_post-content--note" /> <label for="tumblr_post-content--note">Notes (<%= @timeline[:service_counts]['tumblr_post-content--note'] %>)</label>
+                </li>
+              <% end %>
+              <br />
+            </ul>
+          </li>
+        <% end %>
+
+        <% if (@timeline[:service_counts]['twitter_tweet'].to_i + @timeline[:service_counts]['twitter_retweet'].to_i) > 0 %>
+          <li>
+            <strong>Twitter:</strong>
+            <ul>
+              <% if @timeline[:service_counts]['twitter_tweet'] %>
+                <li data-service="twitter_tweet">
+                  <input autocomplete="off" type="checkbox" checked="true" id="twitter_tweet"/> <label for="twitter_tweet">Tweets (<%= @timeline[:service_counts]['twitter_tweet'] || 0 %>)</label>
+                </li>
+              <% end %>
+
+              <% if @timeline[:service_counts]['twitter_retweet'] %>
+                <li data-service="twitter_retweet">
+                  <input autocomplete="off" type="checkbox" checked="true" id="twitter_retweet"/> <label for="twitter_retweet">Retweets (<%= @timeline[:service_counts]['twitter_retweet'] || 0 %>)</label>
+                </li>
+              <% end %>
+              <br />
+            </ul>
+          </li>
+        <% end %>
+
+        <% if @timeline[:service_counts]['reddit_comment'] %>
+          <li>
+            <strong>Reddit:</strong>
+            <ul>
+              <li data-service="reddit_comment">
+                <input autocomplete="off" type="checkbox" checked="true" id="reddit_comment"/> <label for="reddit_comment">Comments (<%= @timeline[:service_counts]['reddit_comment'] || 0 %>)</label>
+              </li>
+              <br />
+            </ul>
+          </li>        
+        <% end %>
+
+        <% if (@timeline[:service_counts]['pixiv_post'].to_i + @timeline[:service_counts]['matrix_event'].to_i + @timeline[:service_counts]['android_sms'].to_i + 
+          @timeline[:service_counts]['windows_phone_sms'].to_i + @timeline[:service_counts]['mamirc_event'].to_i + @timeline[:service_counts]['colloquy_message'].to_i + 
+          @timeline[:service_counts]['pidgin_message'].to_i + @timeline[:service_counts]['deviantart_post'].to_i + @timeline[:service_counts]['youtube_video'].to_i) > 0 
+          @timeline[:service_counts]['hangouts_event'].to_i %>
+          <li>
+            <strong>Other:</strong>
+            <ul>
+              <% if @timeline[:service_counts]['hangouts_event'] %>
+                <li data-service="hangouts_event">
+                  <input autocomplete="off" type="checkbox" checked="true" id="hangouts_event" /> <label for="hangouts_event">Hangouts (<%= @timeline[:service_counts]['hangouts_event'] || 0 %>)</label>
+                </li>
+              <% end %>
+
+              <% if @timeline[:service_counts]['pixiv_post'] %>
+                <li data-service="pixiv_post">
+                  <input autocomplete="off" type="checkbox" checked="true" id="pixiv_post"/> <label for="pixiv_post">Pixiv (<%= @timeline[:service_counts]['pixiv_post'] || 0 %>)</label>
+                </li>
+              <% end %>
+  
+              <% if @timeline[:service_counts]['matrix_event'] %>
+                <li data-service="matrix_event">
+                  <input autocomplete="off" type="checkbox" checked="true" id="matrix_event"/> <label for="matrix_event">Matrix (<%= @timeline[:service_counts]['matrix_event'] || 0 %>)</label>
+                </li>
+              <% end %>
+  
+              <% if @timeline[:service_counts]['android_sms'] %>
+                <li data-service="android_sms">
+                  <input autocomplete="off" type="checkbox" checked="true" id="android_sms"/> <label for="android_sms">SMS (Android) (<%= @timeline[:service_counts]['android_sms'] || 0 %>)</label>
+                </li>
+              <% end %>
+  
+              <% if @timeline[:service_counts]['windows_phone_sms'] %>
+                <li data-service="windows_phone_sms">
+                  <input autocomplete="off" type="checkbox" checked="true" id="windows_phone_sms"/> <label for="windows_phone_sms">SMS (WP7) (<%= @timeline[:service_counts]['windows_phone_sms'] || 0 %>)</label>
+                </li>
+              <% end %>
+  
+              <% if @timeline[:service_counts]['mamirc_event'] %>
+                <li data-service="mamirc_event">
+                  <input autocomplete="off" type="checkbox" checked="true" id="mamirc_event"/> <label for="mamirc_event">MamIRC (<%= @timeline[:service_counts]['mamirc_event'] || 0 %>)</label>
+                </li>
+              <% end %>
+        
+              <% if @timeline[:service_counts]['colloquy_message'] %>
+                <li data-service="colloquy_message">
+                  <input autocomplete="off" type="checkbox" checked="true" id="colloquy_message"/> <label for="colloquy_message">Colloquy (<%= @timeline[:service_counts]['colloquy_message'] || 0 %>)</label>
+                </li>
+              <% end %>
+          
+              <% if @timeline[:service_counts]['pidgin_message'] %>
+              <li data-service="pidgin_message">
+                <input autocomplete="off" type="checkbox" checked="true" id="pidgin_message"/> <label for="pidgin_message">Pidgin (<%= @timeline[:service_counts]['pidgin_message'] || 0 %>)</label>
+              </li>
+              <% end %>
+
+              <% if @timeline[:service_counts]['deviantart_post'] %>
+                <li data-service="deviantart_post">
+                  <input autocomplete="off" type="checkbox" checked="true" id="deviantart_post"/> <label for="deviantart_post">DeviantArt (<%= @timeline[:service_counts]['deviantart_post'] || 0 %>)</label>
+                </li>
+              <% end %>
+
+              <% if @timeline[:service_counts]['youtube_video'] %>
+                <li data-service="youtube_video">
+                  <input autocomplete="off" type="checkbox" checked="true" id="youtube_video"/> <label for="youtube_video">YouTube (<%= @timeline[:service_counts]['youtube_video'] || 0 %>)</label>
+                </li>
+              <% end %>
+            </ul>
+          </li>
+        <% end %>
+      </ul>
+
+      <h4>Date:</h4>
+      <ul class="dates">
+        <% @timeline[:dates].sort.reverse.each do |year| %>        
+            <dt class="description-title"><span class="expand-collapse">&#10133;</span> <%= year[0] %></dt>
+            <dd class="description">
+              <ul>
+                <% 12.downto(1).each do |month| %>
+                  <li>
+                    <% if year[1][month] %>
+                      <a class="calendar-page" data-page="<%= year[1][month] %>" href="/profiles/<%= @person[:uid] %>"><%= Date::MONTHNAMES[month] %></a>
+                    <% else %>
+                      <%= Date::MONTHNAMES[month] %>
+                    <% end %>
+                  </li>                
+                <% end %>
+              </ul>
+            </dd>
+        <% end %>
+      </ul>
+
+      <div class="settings">
+        <dt class="description-title">Settings: <span class="expand-collapse">&#10133;</span></dt>
+        <dd class="description">
+          <%= form_with do |form| %>
+            <p>
+              Silence updates for:
+              <select name="notification_delay">
+              <% {0 => "-", 86400 => "1 day", 604800 => "7 days", 2678400 => "1 month"}.each do |k, v| %>
+                <option value="<%= k %>" <% if @sc.notification_delay == k %>selected<% end %>><%= v %></option>
+              <% end %>
+              </select>
+            </p>
+
+            <p>
+              YouTube Auto-Download:
+              <input type="checkbox" name="youtube_auto_download" <% if @sc.youtube_auto_download %>checked<% end %> />
+            </p>
+
+            <%= form.submit "Save", data: {disable_with: false} %>
+          <% end %>
+        </dd>
+      </div>
+    <% end %>
+  </aside>
+
+  <ul class="posts">
+    <div class="flex-container" id="loading-spinner">
+      <i class="fas fa-spinner fa-spin"></i>
+    </div>
+    <div class="posts-container">
+    </div>
+    <div class="pagination">
+      <a class="page-back-end" href=""><i class="fas fa-angle-double-left"></i></a>
+      <a class="page-back" href=""><i class="fas fa-angle-left"></i></a>
+      Page <span class="currentPageNumber"><%= @page_number %></span> of <span class="totalPageNumber"><%= (@person[:post_count] / @pagination.to_f).ceil %></span>
+      <a class="page-forward" href=""><i class="fas fa-angle-right"></i></a>
+      <a class="page-forward-end" href=""><i class="fas fa-angle-double-right"></i></a>
+    </div>
+  </ul>
+</section>
