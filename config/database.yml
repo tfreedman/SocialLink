@@ -25,17 +25,6 @@ production:
   <<: *sociallink
   database: <%= SocialLink::Application.credentials.sociallink_database_name %>
 
-iot:
-  adapter: postgresql
-  pool: 8
-  timeout: 10000
-  database: <%= SocialLink::Application.credentials.iot_database_name %>
-  username: <%= SocialLink::Application.credentials.iot_database_username %>
-  password: <%= SocialLink::Application.credentials.iot_database_password %>
-  host: <%= SocialLink::Application.credentials.iot_database_host %>
-  port: <%= SocialLink::Application.credentials.iot_database_port %>
-  reconnect: true
-
 hindsight:
   adapter: postgresql
   pool: 8

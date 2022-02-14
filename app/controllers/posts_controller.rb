@@ -18,10 +18,10 @@ class PostsController < ApplicationController
 
       if post
         contacts = []
-        resource = Device.where(name: 'SOCIAL_LINK').first.resource
-        Device.where(name: resource[:contacts]).find_each do |address_book|
-          address_book.state[:contacts].each do |contact|
-            contacts << {contact: contact, address_book: address_book.resource[:uri].split('/')[-1]}
+        address_books = YAML.load(File.read("contacts.yml"))
+        address_books.each do |key, value|
+          value.each do |contact|
+            contacts << {contact: contact, address_book: key}
           end
         end
 

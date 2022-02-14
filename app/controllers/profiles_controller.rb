@@ -8,7 +8,7 @@ class ProfilesController < ApplicationController
     pagination = 100
 
     @mxid_to_name = generate_mxid_to_name
-    @matrix_hs_url = Device.where(name: 'MATRIX_SCRAPER').first.resource[:account].split(':')[1]
+    @matrix_hs_url = SocialLink::Application.credentials.matrix_hs_url
 
     @person = fetch_posts(params["uuid"], params["filters"] || {})
     total_count = @person[:posts].count
@@ -33,10 +33,10 @@ class ProfilesController < ApplicationController
   
   def fetch_posts(uid, filters = {})
     @contacts = []
-    resource = Device.where(name: 'SOCIAL_LINK').first.resource
-    Device.where(name: resource[:contacts]).find_each do |address_book|
-      address_book.state[:contacts].each do |contact|
-        @contacts << {contact: contact, address_book: address_book.resource[:uri].split('/')[-1]}
+    address_books = YAML.load(File.read("contacts.yml"))
+    address_books.each do |key, value|
+      value.each do |contact|
+        @contacts << {contact: contact, address_book: key}
       end
     end
 
@@ -133,13 +133,6 @@ class ProfilesController < ApplicationController
             twitter_ids << a.user_id
           end
         end
-
-#        Device.where(name: 'TWITTER').first.state[:accounts].each do |account|
-#          if twitter_accounts.include?(account[:username])
-#            twitter_ids << account[:user_id]
-#            @twitter_id_to_username[account[:user_id]] = account[:username]
-#          end
-#        end
 
         facebook_accounts = facebook_accounts.uniq
         facebook_accounts.each do |fb_account|
@@ -505,10 +498,10 @@ class ProfilesController < ApplicationController
     @contacts = []
     @pagename = 'index'
     @title = 'Home'
-    resource = Device.where(name: 'SOCIAL_LINK').first.resource
-    Device.where(name: resource[:contacts]).find_each do |address_book|
-      address_book.state[:contacts].each do |contact|
-        @contacts << {contact: contact, address_book: address_book.resource[:uri].split('/')[-1]}
+    address_books = YAML.load(File.read("contacts.yml"))
+    address_books.each do |key, value|
+      value.each do |contact|
+        @contacts << {contact: contact, address_book: key}
       end
     end
 
@@ -548,10 +541,10 @@ class ProfilesController < ApplicationController
     @next_page_url = ""
 
     @contacts = []
-    resource = Device.where(name: 'SOCIAL_LINK').first.resource
-    Device.where(name: resource[:contacts]).find_each do |address_book|
-      address_book.state[:contacts].each do |contact|
-        @contacts << {contact: contact, address_book: address_book.resource[:uri].split('/')[-1]}
+    address_books = YAML.load(File.read("contacts.yml"))
+    address_books.each do |key, value|
+      value.each do |contact|
+        @contacts << {contact: contact, address_book: key}
       end
     end
 
@@ -620,8 +613,10 @@ class ProfilesController < ApplicationController
 
     mxid_to_name = {}
 
-    Device.where(protocol: 'CONTACTS').find_each do |address_book|
-      address_book.state[:contacts].each do |contact|
+
+    address_books = YAML.load(File.read("contacts.yml")) ; nil
+    address_books.each do |key, value|
+      value.each do |contact|
         vcard = VCardigan.parse(contact[:card])
         name = vcard.fn.first.values[0]
         uid = vcard.uid.first.values[0]
@@ -637,7 +632,7 @@ class ProfilesController < ApplicationController
           end
         end
       end
-    end
+    end ; nil
 
     contacts.each do |contact|
       vcard = VCardigan.parse(contact[:contact][:card])
@@ -777,10 +772,10 @@ class ProfilesController < ApplicationController
 
   def generate_mxid_to_name
     @contacts = []
-    resource = Device.where(name: 'SOCIAL_LINK').first.resource
-    Device.where(name: resource[:contacts]).find_each do |address_book|
-      address_book.state[:contacts].each do |contact|
-        @contacts << {contact: contact, address_book: address_book.resource[:uri].split('/')[-1]}
+    address_books = YAML.load(File.read("contacts.yml"))
+    address_books.each do |key, value|
+      value.each do |contact|
+        @contacts << {contact: contact, address_book: key}
       end
     end
 

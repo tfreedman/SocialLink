@@ -31,12 +31,12 @@ class ApplicationController < ActionController::Base
 
     self.supported_types
     @contacts = []
-    resource = Device.where(name: 'SOCIAL_LINK').first.resource
-    Device.where(name: resource[:contacts]).find_each do |address_book|
-      address_book.state[:contacts].each do |contact|
+    address_books = YAML.load(File.read("contacts.yml")) ; nil
+    address_books.each do |key, value|
+      value.each do |contact|
         @contacts << contact
       end
-    end
+    end  ; nil
     
     @contacts.shuffle.each do |contact|
       vcard = VCardigan.parse(contact[:card])
