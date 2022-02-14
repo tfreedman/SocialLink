@@ -207,139 +207,141 @@ class ProfilesController < ApplicationController
           end
         end
 
-        if filters["types"].nil? || (filters["types"] && filters["types"].include?("android_sms"))
-          sms_messages = AndroidSms.where(address: phone_numbers).or(AndroidSms.where(contact_name: vcard.fn.first.values[0])).order('date DESC').all
-        end
-
-        if filters["types"].nil? || (filters["types"] && filters["types"].include?("windows_phone_sms"))
-          windows_phone_sms_messages = WindowsPhoneSms.where(real_name: vcard.fn.first.values[0]).order('timestamp DESC').all
-        end
-
-        if filters["types"].nil? || (filters["types"] && filters["types"].include?("facebook_message"))
-          facebook_messages = FacebookMessage.where(room_id: FacebookRoom.where(uid: uid).pluck(:room_id)).all
-        end
-
-        if vcard.fn.first.values[0].start_with?('#') # Group Chat
-          if filters["types"].nil? || (filters["types"] && filters["types"].include?("mamirc_event"))
-            mamirc_events = MamircEvent.where(real_sender: vcard.fn.first.values[0]).or(MamircEvent.where(real_receiver: vcard.fn.first.values[0])).order('timestamp DESC').all
+        if SocialLink::Application.credentials.hindsight_integration
+          if filters["types"].nil? || (filters["types"] && filters["types"].include?("android_sms"))
+            sms_messages = AndroidSms.where(address: phone_numbers).or(AndroidSms.where(contact_name: vcard.fn.first.values[0])).order('date DESC').all
           end
 
-          if filters["types"].nil? || (filters["types"] && filters["types"].include?("colloquy_message"))
-            colloquy_messages = ColloquyMessage.where(real_sender: vcard.fn.first.values[0], enabled: true).or(ColloquyMessage.where(real_receiver: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC').all
+          if filters["types"].nil? || (filters["types"] && filters["types"].include?("windows_phone_sms"))
+            windows_phone_sms_messages = WindowsPhoneSms.where(real_name: vcard.fn.first.values[0]).order('timestamp DESC').all
           end
 
-          if filters["types"].nil? || (filters["types"] && filters["types"].include?("pidgin_message"))
-            pidgin_messages = PidginMessage.where(enabled: true, real_sender: vcard.fn.first.values[0]).or(PidginMessage.where(enabled: true, real_receiver: vcard.fn.first.values[0])).order('timestamp DESC').all
+          if filters["types"].nil? || (filters["types"] && filters["types"].include?("facebook_message"))
+            facebook_messages = FacebookMessage.where(room_id: FacebookRoom.where(uid: uid).pluck(:room_id)).all
           end
+
+          if vcard.fn.first.values[0].start_with?('#') # Group Chat
+            if filters["types"].nil? || (filters["types"] && filters["types"].include?("mamirc_event"))
+              mamirc_events = MamircEvent.where(real_sender: vcard.fn.first.values[0]).or(MamircEvent.where(real_receiver: vcard.fn.first.values[0])).order('timestamp DESC').all
+            end
+  
+            if filters["types"].nil? || (filters["types"] && filters["types"].include?("colloquy_message"))
+              colloquy_messages = ColloquyMessage.where(real_sender: vcard.fn.first.values[0], enabled: true).or(ColloquyMessage.where(real_receiver: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC').all
+            end
+
+            if filters["types"].nil? || (filters["types"] && filters["types"].include?("pidgin_message"))
+              pidgin_messages = PidginMessage.where(enabled: true, real_sender: vcard.fn.first.values[0]).or(PidginMessage.where(enabled: true, real_receiver: vcard.fn.first.values[0])).order('timestamp DESC').all
+            end
           
-          if filters["types"].nil? || (filters["types"] && filters["types"].include?("matrix_event"))
-            matrix_rooms = MatrixRoom.where(enabled: [true, nil], name: vcard.fn.first.values[0]).pluck(:room_id)
-            matrix_events = MatrixEvent.where(room_id: matrix_rooms, event_type: 'm.room.message').order('origin_server_ts DESC').all
-          end
-        else
-          if filters["types"].nil? || (filters["types"] && filters["types"].include?("matrix_event"))
-            MatrixRoom.where(enabled: [true, nil]).find_each do |room|
-              if room.participants
-                room.participants.each do |participant|
-                  if (matrix_accounts.include?(participant) && room.participants.count == 2) || (matrix_accounts.include?(participant) && room.participants.count == 3 && room.participants.select{ |p| p.start_with?('@skypebot')}.count > 0)
-                    matrix_rooms << room.room_id
+            if filters["types"].nil? || (filters["types"] && filters["types"].include?("matrix_event"))
+              matrix_rooms = MatrixRoom.where(enabled: [true, nil], name: vcard.fn.first.values[0]).pluck(:room_id)
+              matrix_events = MatrixEvent.where(room_id: matrix_rooms, event_type: 'm.room.message').order('origin_server_ts DESC').all
+            end
+          else
+            if filters["types"].nil? || (filters["types"] && filters["types"].include?("matrix_event"))
+              MatrixRoom.where(enabled: [true, nil]).find_each do |room|
+                if room.participants
+                  room.participants.each do |participant|
+                    if (matrix_accounts.include?(participant) && room.participants.count == 2) || (matrix_accounts.include?(participant) && room.participants.count == 3 && room.participants.select{ |p| p.start_with?('@skypebot')}.count > 0)
+                      matrix_rooms << room.room_id
+                    end
                   end
                 end
               end
+
+              matrix_events = MatrixEvent.where(room_id: matrix_rooms, event_type: 'm.room.message').order('origin_server_ts DESC').all
             end
 
-            matrix_events = MatrixEvent.where(room_id: matrix_rooms, event_type: 'm.room.message').order('origin_server_ts DESC').all
-          end
+            if filters["types"].nil? || (filters["types"] && filters["types"].include?("mamirc_event"))
+              mamirc_events = MamircEvent.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name).or(MamircEvent.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name)).order('timestamp DESC').all
+            end
 
-          if filters["types"].nil? || (filters["types"] && filters["types"].include?("mamirc_event"))
-            mamirc_events = MamircEvent.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name).or(MamircEvent.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name)).order('timestamp DESC').all
-          end
+            if filters["types"].nil? || (filters["types"] && filters["types"].include?("pidgin_message"))
+              pidgin_messages = PidginMessage.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(PidginMessage.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
+            end
 
-          if filters["types"].nil? || (filters["types"] && filters["types"].include?("pidgin_message"))
-            pidgin_messages = PidginMessage.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(PidginMessage.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
-          end
-
-          if filters["types"].nil? || (filters["types"] && filters["types"].include?("colloquy_message"))
-            colloquy_messages = ColloquyMessage.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(ColloquyMessage.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
-          end
-        end
-
-        if mamirc_events || colloquy_messages
-          if (mamirc_events && mamirc_events.count > 0) || (colloquy_messages && colloquy_messages.count > 0)
-            accounts << {service: 'irc'}
-          end
-        end
-
-        if matrix_events
-          last_timestamps['matrix_event'] = []
-          matrix_events.each do |m|
-            posts << {sort_time: m.origin_server_ts / 1000, type: 'matrix_event', content: m}
-            last_timestamps['matrix_event'] << m.origin_server_ts / 1000
-          end
-        end
-
-        if windows_phone_sms_messages
-          last_timestamps['windows_phone_sms'] = []
-          windows_phone_sms_messages.each do |w|
-            posts << {sort_time: w.timestamp, type: 'windows_phone_sms', content: w}
-            last_timestamps['windows_phone_sms'] << w.timestamp
-          end
-        end
-
-        if pidgin_messages
-          last_timestamps['pidgin_message'] = []
-          pidgin_messages.each do |p|
-            posts << {sort_time: p.timestamp, type: 'pidgin_message', content: p}
-            last_timestamps['pidgin_message'] << p.timestamp
-          end
-        end
-
-        if colloquy_messages
-          last_timestamps['colloquy_message'] = []
-          colloquy_messages.each do |c|
-            posts << {sort_time: c.timestamp, type: 'colloquy_message', content: c}
-            last_timestamps['colloquy_message'] << c.timestamp
-          end
-        end
-
-        if mamirc_events
-          last_timestamps['mamirc_event'] = []
-          mamirc_events.each do |m|
-            posts << {sort_time: m.timestamp / 1000, type: 'mamirc_event', content: m}
-            last_timestamps['mamirc_event'] << m.timestamp / 1000
-          end
-        end
-
-        hangouts_conversations = []
-        HangoutsConversation.find_each do |conversation|
-          conversation.participant_data.each do |p|
-            if p["fallback_name"] == vcard.fn.first.values[0]
-              hangouts_conversations << conversation.conversation_id
+            if filters["types"].nil? || (filters["types"] && filters["types"].include?("colloquy_message"))
+              colloquy_messages = ColloquyMessage.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(ColloquyMessage.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
             end
           end
-        end
 
-        if hangouts_conversations.count > 0
-          accounts << {service: 'hangouts'}
-        end
-
-        if sms_messages
-          last_timestamps['android_sms'] = []
-          sms_messages.each do |s|
-            posts << {sort_time: s.date / 1000, type: 'android_sms', content: s}
-            last_timestamps['android_sms'] << s.date / 1000
+          if mamirc_events || colloquy_messages
+            if (mamirc_events && mamirc_events.count > 0) || (colloquy_messages && colloquy_messages.count > 0)
+              accounts << {service: 'irc'}
+            end
           end
-        end
 
-        if filters["types"].nil? || (filters["types"] && filters["types"].include?("hangouts_event"))
-          hangouts_events = HangoutsEvent.where(conversation_id: hangouts_conversations).order('timestamp DESC').all
-        end
+          if matrix_events
+            last_timestamps['matrix_event'] = []
+            matrix_events.each do |m|
+              posts << {sort_time: m.origin_server_ts / 1000, type: 'matrix_event', content: m}
+              last_timestamps['matrix_event'] << m.origin_server_ts / 1000
+            end
+          end
 
-        if hangouts_events
-          last_timestamps['hangouts_event'] = []
-          hangouts_events.each do |h|
-            posts << {sort_time: (h.timestamp / 1000000).to_i, type: 'hangouts_event', content: h}
-            last_timestamps['hangouts_event'] << (h.timestamp / 1000000).to_i
+          if windows_phone_sms_messages
+            last_timestamps['windows_phone_sms'] = []
+            windows_phone_sms_messages.each do |w|
+              posts << {sort_time: w.timestamp, type: 'windows_phone_sms', content: w}
+              last_timestamps['windows_phone_sms'] << w.timestamp
+            end
+          end
+
+          if pidgin_messages
+            last_timestamps['pidgin_message'] = []
+            pidgin_messages.each do |p|
+              posts << {sort_time: p.timestamp, type: 'pidgin_message', content: p}
+              last_timestamps['pidgin_message'] << p.timestamp
+            end
+          end
+
+          if colloquy_messages
+            last_timestamps['colloquy_message'] = []
+            colloquy_messages.each do |c|
+              posts << {sort_time: c.timestamp, type: 'colloquy_message', content: c}
+              last_timestamps['colloquy_message'] << c.timestamp
+            end
+          end
+
+          if mamirc_events
+            last_timestamps['mamirc_event'] = []
+            mamirc_events.each do |m|
+              posts << {sort_time: m.timestamp / 1000, type: 'mamirc_event', content: m}
+              last_timestamps['mamirc_event'] << m.timestamp / 1000
+            end
+          end
+
+          hangouts_conversations = []
+          HangoutsConversation.find_each do |conversation|
+            conversation.participant_data.each do |p|
+              if p["fallback_name"] == vcard.fn.first.values[0]
+                hangouts_conversations << conversation.conversation_id
+              end
+            end
+          end
+
+          if hangouts_conversations.count > 0
+            accounts << {service: 'hangouts'}
+          end
+  
+          if sms_messages
+            last_timestamps['android_sms'] = []
+            sms_messages.each do |s|
+              posts << {sort_time: s.date / 1000, type: 'android_sms', content: s}
+              last_timestamps['android_sms'] << s.date / 1000
+            end
+          end
+  
+          if filters["types"].nil? || (filters["types"] && filters["types"].include?("hangouts_event"))
+            hangouts_events = HangoutsEvent.where(conversation_id: hangouts_conversations).order('timestamp DESC').all
+          end
+  
+          if hangouts_events
+            last_timestamps['hangouts_event'] = []
+            hangouts_events.each do |h|
+              posts << {sort_time: (h.timestamp / 1000000).to_i, type: 'hangouts_event', content: h}
+              last_timestamps['hangouts_event'] << (h.timestamp / 1000000).to_i
+            end
           end
         end
 
