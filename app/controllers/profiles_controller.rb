@@ -12,13 +12,6 @@ class ProfilesController < ApplicationController
 
     @person = fetch_posts(params["uuid"], params["filters"] || {})
     total_count = @person[:posts].count
-#    if params["filters"]
-#      if params["filters"]["types"]
-#        @person[:posts].delete_if { |x| 
-#          !params["filters"]["types"].include?(x[:type])
-#        }
-#      end
-#    end
     timestamps = []
     @person[:posts].each do |post|
       timestamps << post[:sort_time]
