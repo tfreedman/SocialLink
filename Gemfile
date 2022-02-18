@@ -57,7 +57,7 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 gem 'pg'
 gem 'vcardigan'
-gem 'miro', git: 'https://github.com/jonbuda/miro.git'
+gem 'mini_magick'
 gem 'rgb'
 
 # For importing Adium / Pidgin logs...
@@ -68,3 +68,5 @@ gem 'rgb'
 gem 'net-smtp', require: false
 gem 'net-imap', require: false
 gem 'net-pop', require: false
+
+gem 'mini_magick'
