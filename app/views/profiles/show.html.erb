@@ -10,12 +10,12 @@
               File.open('/tmp/' + photo_name, 'wb') do |f|
                 f.write(Base64.decode64(@person[:photo]))
               end
-              @colors = Miro::DominantColors.new('/tmp/' + photo_name)
+              @colors = extract_dominant_colors('/tmp/' + photo_name)
             %>
             <div class="photo">
               <img src="data:image/jpeg;base64, <%= @person[:photo] %>" />
             </div>
-            <% bgcolor = RGB::Color.from_rgb_hex(@colors.to_hex[0]) %>
+            <% bgcolor = RGB::Color.from_rgb_hex(@colors[0]) %>
             <style>
               <% bgcolor.l = 0.5 if bgcolor.l > 0.5 %>
               a, i.fa-spinner {color: <%= bgcolor.to_rgb_hex %> !important; fill: <%= bgcolor.to_rgb_hex %> !important;}
