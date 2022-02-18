@@ -245,7 +245,7 @@ DEPENDENCIES
   net-smtp
   pg
   puma (~> 5.0)
-  rails (~> 7.0.1)
+  rails (~> 7.0.2, >= 7.0.2.2)
   rgb
   sass-rails (>= 6)
   selenium-webdriver
