@@ -156,7 +156,7 @@ class ProfilesController < ApplicationController
         end
         
         if filters["types"].nil? || (filters["types"] && filters["types"].include?("deviantart_post"))
-          deviantart_posts = DeviantartPost.where(username: deviantart_accounts).all
+          deviantart_posts = DeviantartPost.where(username: deviantart_accounts, parsed: true).all
         end
 
         if filters["types"].nil? || (filters["types"] && 
@@ -453,12 +453,8 @@ class ProfilesController < ApplicationController
         if deviantart_posts
           last_timestamps['deviantart_post'] = []
           deviantart_posts.each do |d|
-            begin
-              json = JSON.parse(d[:json_dump])
-              posts << {sort_time: Time.parse(json["pubdate"]).to_i, type: 'deviantart_post', content: d}
-              last_timestamps['deviantart_post'] << Time.parse(json["pubdate"]).to_i
-            rescue
-            end
+            posts << {sort_time: d.pubdate.to_i, type: 'deviantart_post', content: d}
+            last_timestamps['deviantart_post'] << d.pubdate.to_i
           end
         end
 
