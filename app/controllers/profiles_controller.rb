@@ -11,6 +11,9 @@ class ProfilesController < ApplicationController
     @matrix_hs_url = SocialLink::Application.credentials.matrix_hs_url
 
     @person = fetch_posts(params["uuid"], params["filters"] || {})
+    if params["update_filters"] == "true" && params["filters"]
+      SocialLinkContact.where(uid: params["uuid"]).first.update(default_filters: params["filters"]["types"])
+    end
     total_count = @person[:posts].count
     timestamps = []
     @person[:posts].each do |post|
@@ -545,6 +548,8 @@ class ProfilesController < ApplicationController
 
       if uid == params["uuid"]
         @person = fetch_posts(uid, {})
+
+        @filters = SocialLinkContact.where(uid: uid).first.default_filters || ApplicationController::SUPPORTED_TYPES
       end
     end
 
@@ -603,7 +608,6 @@ class ProfilesController < ApplicationController
     contact_name_to_uid = {}
 
     mxid_to_name = {}
-
 
     address_books = YAML.load(File.read("contacts.yml")) ; nil
     address_books.each do |key, value|

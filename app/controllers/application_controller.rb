@@ -1,18 +1,15 @@
 class ApplicationController < ActionController::Base
   skip_before_action :verify_authenticity_token, only: [:update]
   before_action :check_session_keys, except: [:update]
-  before_action :supported_types
 
-  def supported_types
-    @types = ["facebook_message", "facebook_post", "facebook_photo", "facebook_photo_of",
-    "facebook_album", "hangouts_event", "instagram_post", "instagram_story",
-    "tumblr_post-content--photo", "tumblr_post-content--video", "tumblr_post-content--audio",
-    "tumblr_post-content--text", "tumblr_post-content--answer", "tumblr_post-content--iframe",
-    "tumblr_post-content--chat", "tumblr_post-content--link", "tumblr_post-content--quote",
-    "pixiv_post", "matrix_event", "android_sms", "windows_phone_sms", "reddit_comment",
-    "mamirc_event", "colloquy_message", "pidgin_message", "twitter_tweet", "twitter_retweet",
-    "deviantart_post", "webcomics_strip", "youtube_video"]
-  end
+  SUPPORTED_TYPES = ["facebook_message", "facebook_post", "facebook_photo", "facebook_photo_of",
+  "facebook_album", "hangouts_event", "instagram_post", "instagram_story",
+  "tumblr_post-content--photo", "tumblr_post-content--video", "tumblr_post-content--audio",
+  "tumblr_post-content--text", "tumblr_post-content--answer", "tumblr_post-content--iframe",
+  "tumblr_post-content--chat", "tumblr_post-content--link", "tumblr_post-content--quote",
+  "pixiv_post", "matrix_event", "android_sms", "windows_phone_sms", "reddit_comment",
+  "mamirc_event", "colloquy_message", "pidgin_message", "twitter_tweet", "twitter_retweet",
+  "deviantart_post", "webcomics_strip", "youtube_video"]
 
 
   # TODO: add a real authentication solution
@@ -29,7 +26,6 @@ class ApplicationController < ActionController::Base
     uids = params["uids"] || []
     service = params["service"] || nil
 
-    self.supported_types
     @contacts = []
     address_books = YAML.load(File.read("contacts.yml")) ; nil
     address_books.each do |key, value|
@@ -50,7 +46,7 @@ class ApplicationController < ActionController::Base
           @person = pc.fetch_posts(uid)
         else
           types = []
-          @types.each do |type|
+          SUPPORTED_TYPES.each do |type|
             types << type if type.start_with?(service.to_s.downcase)
           end
           logger.info "TYPES: #{types.to_s}"
