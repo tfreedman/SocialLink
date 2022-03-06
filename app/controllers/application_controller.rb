@@ -1,6 +1,7 @@
 class ApplicationController < ActionController::Base
   skip_before_action :verify_authenticity_token, only: [:update]
-  before_action :check_session_keys, except: [:update]
+  before_action :check_session_keys, except: [:update, :auth]
+  before_action :service_name_path_cache_update
 
   SUPPORTED_TYPES = ["facebook_message", "facebook_post", "facebook_photo", "facebook_photo_of",
   "facebook_album", "hangouts_event", "instagram_post", "instagram_story",
@@ -12,15 +13,87 @@ class ApplicationController < ActionController::Base
   "deviantart_post", "webcomics_strip", "youtube_video"]
 
 
+  def auth
+    if params[:key] == SocialLink::Application.credentials.auth_token
+#      session[:key] = "hello!"
+      render plain: ":)" and return
+    end
+    render plain: ":(" and return
+  end
+
   # TODO: add a real authentication solution
   def check_session_keys
     if !session[:key] || (session[:key] && session[:key] != "hello!")
       render :json => {:status=>false}, :status => 401 and return
-#    else
-#      session[:key] = "hello!"
     end
   end
 
+  def service_name_path_cache_update
+    snpc = ServiceNamePathCache.where(service: 'sociallink').first
+    return if snpc && snpc.updated_at >= File.mtime("contacts.yml")
+    contacts = []
+
+    start_time = Time.now
+
+    address_books = YAML.load(File.read("contacts.yml")) ; nil
+    address_books.each do |key, value|
+      value.each do |contact|
+        contacts << contact
+      end
+    end ; nil
+
+    contacts.each do |contact|
+      vcard = VCardigan.parse(contact[:card])
+
+      youtube_accounts = []
+      reddit_accounts = []
+      instagram_accounts = []
+      deviantart_accounts = []
+      pixiv_accounts = []
+      tumblr_accounts = []
+      facebook_accounts = []
+      twitter_accounts = []
+      phone_numbers = []
+      matrix_accounts = []
+      webcomics = []
+      accounts = []
+
+      if vcard.field('x-socialprofile')
+        vcard.field('x-socialprofile').each do |profile|
+          if profile.value.include?("youtube.com")
+            ServiceNamePathCache.create(service: 'YouTube', name: vcard.fn.first.values[0], username: profile.value.split('youtube.com/channel/')[1], updated_at: start_time)
+          elsif profile.value.include?("wc://")
+            ServiceNamePathCache.create(service: 'Webcomic', name: vcard.fn.first.values[0], username: profile.value.split('#')[1], updated_at: start_time)
+          elsif profile.value.include?("reddit.com/user/") || profile.value.include?("reddit.com/u/")
+            ServiceNamePathCache.create(service: 'Reddit', name: vcard.fn.first.values[0], username: profile.value.split('/')[-1], updated_at: start_time)
+          elsif profile.value.include?("instagram.com/")
+            ServiceNamePathCache.create(service: 'Instagram', name: vcard.fn.first.values[0], username: InstagramAccount.where(username: profile.value.split('instagram.com/')[1].split('/')[0]).first.instagram_id, updated_at: start_time)
+          elsif profile.value.include?("deviantart.com/")
+            ServiceNamePathCache.create(service: 'DeviantArt', name: vcard.fn.first.values[0], username: profile.value.split('deviantart.com/')[1].split('/')[0].downcase, updated_at: start_time)
+          elsif profile.value.include?("pixiv.net/")
+            if profile.value.include?("pixiv.net/member")
+              ServiceNamePathCache.create(service: 'Pixiv', name: vcard.fn.first.values[0], username: profile.value.split('id=')[1], updated_at: start_time)
+            elsif profile.value.include?('pixiv.net/') && profile.value.include?('users/')
+              ServiceNamePathCache.create(service: 'Pixiv', name: vcard.fn.first.values[0], username: profile.value.split('users/')[1].split('/')[0], updated_at: start_time)
+            end
+          elsif profile.value.include?("tumblr.com")
+            ServiceNamePathCache.create(service: 'Tumblr', name: vcard.fn.first.values[0], username: profile.value.split('.tumblr.com')[0].split('://')[1], updated_at: start_time)
+          elsif profile.value.include?("facebook.com/")
+            ServiceNamePathCache.create(service: 'Facebook', name: vcard.fn.first.values[0], username: profile.value.split('facebook.com/')[1].split('/')[0], updated_at: start_time)
+          elsif profile.value.include?("twitter.com/")
+            ServiceNamePathCache.create(service: 'Twitter', name: vcard.fn.first.values[0], username: profile.value.split('twitter.com/')[1].split('/')[0], updated_at: start_time)
+          end
+        end
+      end
+    end
+    if snpc.nil?
+      ServiceNamePathCache.create(service: 'sociallink', updated_at: start_time)
+    else
+      snpc.update(updated_at: start_time)
+    end
+
+    ServiceNamePathCache.where('updated_at < ?', start_time).destroy_all
+  end
 
   def update()
     uids = params["uids"] || []
@@ -88,3 +161,4 @@ class ApplicationController < ActionController::Base
     render plain: 'done'
   end
 end
+
