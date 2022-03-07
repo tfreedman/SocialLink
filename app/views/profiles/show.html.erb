@@ -15,7 +15,11 @@
             <div class="photo">
               <img src="data:image/jpeg;base64, <%= @person[:photo] %>" />
             </div>
-            <% bgcolor = RGB::Color.from_rgb_hex(@colors[0]) %>
+            <% begin %>
+              <% bgcolor = RGB::Color.from_rgb_hex(@colors[0]) %>
+            <% rescue %>
+              <% bgcolor = RGB::Color.from_rgb_hex('#FF0000') %>
+            <% end %>
             <style>
               <% bgcolor.l = 0.5 if bgcolor.l > 0.5 %>
               a, i.fa-spinner {color: <%= bgcolor.to_rgb_hex %> !important; fill: <%= bgcolor.to_rgb_hex %> !important;}
@@ -50,7 +54,7 @@
                     <a href="<%= 'https://' + account[:url] %>"><i class="fas fa-book-reader"></i></a>
                   <% end %>
                 <% elsif account[:service] == "matrix" %>
-                  <%= render :partial => 'posts/riot' %>
+                  <%= render :partial => 'posts/element' %>
                 <% elsif account[:service] == "deviantart" %>
                   <a href="<%= account[:url] %>"><i class="fab fa-deviantart"></i></a>
                 <% elsif account[:service] == "facebook" %>

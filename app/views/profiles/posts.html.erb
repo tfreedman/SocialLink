@@ -44,7 +44,7 @@
           <i class="far fa-clock"></i>
         <% end %>
       <% elsif post[:type] == "matrix_event" %>
-        <%= render :partial => 'posts/riot' %>
+        <%= render :partial => 'posts/element' %>
       <% elsif post[:type] == "deviantart_post" %>
         <a href="https://www.deviantart.com/<%= post[:content][:username] %>/art/<%= post[:content][:post_id] %>"><i class="fab fa-deviantart"></i></a>
       <% elsif post[:type] == "pixiv_post" %>

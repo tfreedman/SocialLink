@@ -18,6 +18,8 @@ body {
   font-family: 'Open Sans', sans-serif;
   margin: 0;
   color: #001533;
+
+  svg fill {color: #001533}
 }
 
 h1 {font-size: 30px}
@@ -82,7 +84,7 @@ body.index {
       a {color: #001533}
       svg {
         &.hangouts {width: 35px; height: 35px; position: relative; top: 8px}
-        &.riot {position: relative; top: 4px; width: 24px; height: 29px}
+        &.element {position: relative; top: 4px; width: 24px; height: 29px}
         width: 30px;
         height: 30px;
       }
@@ -196,7 +198,7 @@ section > a > i.fa-angle-left {font-size: 40px}
               font-size: 12px;
             }
           }
-          .pixiv, .riot, .colloquy, .mamirc, .pidgin {width: 24px; margin-left: 5px}
+          .pixiv, .element, .colloquy, .mamirc, .pidgin {width: 24px; margin-left: 5px}
           .fa-deviantart {margin-left: 10px}
 
           
