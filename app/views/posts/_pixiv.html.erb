@@ -1,9 +1,10 @@
-<% json = JSON.parse(post[:content][:json]) %>
-<% image_name = json["body"]["urls"]["original"].split('/')[-1] %>
+<% snpc = ServiceNamePathCache.where(service: 'Pixiv', username: post[:content][:pixiv_member_id]).first %>
+<% post_base = '' %>
 <div>
   <h2>
     <a href="https://www.pixiv.net/en/artworks/<%= post[:content][:post_id] %>"><%= post[:content][:title] %></a>
     <% if post[:content][:page_count] > 1 %>
+      <% post_base = post[:content][:post_id] + '/' %>
       <span style="float: right">
         <a data-fancybox-trigger="pixiv_<%= post[:content][:post_id] %>">
           <%= post[:content][:page_count] %> <i class="fas fa-layer-group"></i>
@@ -12,21 +13,8 @@
     <% end %>
   </h2>
 </div>
-<% if post[:content][:page_count] == 1 %>
-  <a data-fancybox="pixiv_<%= post[:content][:post_id] %>" href="/media/<%= @person[:name] %>/Pixiv/<%= post[:content][:pixiv_member_id] %>/<%= image_name %>">
-    <img src="/media/<%= @person[:name] %>/Pixiv/<%= post[:content][:pixiv_member_id] %>/<%= image_name %>" />
+<% post[:content][:filenames].each_with_index do |file, index| %>
+  <a data-fancybox="pixiv_<%= post[:content][:post_id] %>" href='<%= "/media/#{snpc.name}/#{snpc.service}/#{snpc.username}/#{post_base}#{file}" %>'>
+    <img <% if index > 0 %>style="display: none"<% end %> src='<%= "/media/#{snpc.name}/#{snpc.service}/#{snpc.username}/#{post_base}#{file}" %>'/>
   </a>
-<% elsif post[:content][:page_count] > 1 %>
-  <% begin %>
-    <a data-fancybox="pixiv_<%= post[:content][:post_id] %>" href="/media/<%= @person[:name] %>/Pixiv/<%= post[:content][:pixiv_member_id] %>/<%= post[:content][:post_id] %>/<%= image_name %>"><img src="/media/<%= @person[:name] %>/Pixiv/<%= post[:content][:pixiv_member_id] %>/<%= post[:content][:post_id] %>/<%= image_name %>" /></a>
-    <% files = Dir[SocialLink::Application.credentials.asset_path + "#{@person[:name]}/Pixiv/#{post[:content][:pixiv_member_id]}/#{post[:content][:post_id]}/*"] %>
-    <% files.sort[1..-1].each do |file| %>
-      <% image_name = file.split('/')[-1] %>
-      <a data-fancybox="pixiv_<%= post[:content][:post_id] %>" href="/media/<%= @person[:name] %>/Pixiv/<%= post[:content][:pixiv_member_id] %>/<%= post[:content][:post_id] %>/<%= image_name %>">
-        <img style="display: none" src="/media/<%= @person[:name] %>/Pixiv/<%= post[:content][:pixiv_member_id] %>/<%= post[:content][:post_id] %>/<%= image_name %>" />
-      </a>
-    <% end %>
-  <% rescue %>
-    Error on post <%= post[:content][:post_id] %>
-  <% end %>
 <% end %>

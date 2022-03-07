@@ -464,12 +464,8 @@ class ProfilesController < ApplicationController
         if pixiv_posts
           last_timestamps['pixiv_post'] = []
           pixiv_posts.each do |p|
-            begin
-              json = JSON.parse(p[:json])
-              posts << {sort_time: Time.parse(json["body"]["createDate"]).to_i, type: 'pixiv_post', content: p}
-              last_timestamps['pixiv_post'] << Time.parse(json["body"]["createDate"]).to_i
-            rescue
-            end
+            posts << {sort_time: p.created_at.to_i, type: 'pixiv_post', content: p}
+            last_timestamps['pixiv_post'] << p.created_at.to_i
           end
         end
 
