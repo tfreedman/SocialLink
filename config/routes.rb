@@ -8,5 +8,8 @@ Rails.application.routes.draw do
   get '/statistics', to: 'profiles#statistics'
   get '/posts/:post_type/:post_id', to: 'posts#show'
   post '/update', to: 'application#update'
+
+  get '/auth/:key' => 'application#auth'
+
   root 'profiles#index'
 end
