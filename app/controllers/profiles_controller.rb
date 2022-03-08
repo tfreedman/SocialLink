@@ -115,15 +115,6 @@ class ProfilesController < ApplicationController
           end
         end
 
-        twitter_ids = []
-        @twitter_id_to_username = {}
-        TwitterAccount.find_each do |a|
-          @twitter_id_to_username[a.user_id] = a.username
-          if twitter_accounts.include?(a.username)
-            twitter_ids << a.user_id
-          end
-        end
-
         facebook_accounts = facebook_accounts.uniq
         facebook_accounts.each do |fb_account|
           accounts << {service: 'facebook', url: "https://www.facebook.com/#{fb_account}"}
@@ -188,6 +179,7 @@ class ProfilesController < ApplicationController
         end
 
         if filters["types"].nil? || (filters["types"] && (filters["types"].include?("twitter_tweet")) || filters["types"].include?("twitter_retweet"))
+          twitter_ids = TwitterAccount.where(uid: uid).pluck(:user_id)
           twitter_posts = []
           if filters["types"].nil? || (filters["types"] && filters["types"].include?("twitter_retweet"))
             twitter_posts += TwitterTweet.where(user_id: twitter_ids, is_retweet: true).order('time DESC').all

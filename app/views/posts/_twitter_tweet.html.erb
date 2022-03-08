@@ -33,7 +33,7 @@
   <% photos = post[:content][:entries][:photos] %>
 <% end %>
 <% photos.each do |photo| %>
-  <a href="/media/<%= person[:name] %>/Twitter/<%= @twitter_id_to_username[post[:content][:user_id]] %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" data-fancybox="twitter_<%= post[:content][:tweet_id] %>">
-    <img src="/media/<%= person[:name] %>/Twitter/<%= @twitter_id_to_username[post[:content][:user_id]] %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" />
+  <a href="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" data-fancybox="twitter_<%= post[:content][:tweet_id] %>">
+    <img src="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" />
   </a>
 <% end %>
