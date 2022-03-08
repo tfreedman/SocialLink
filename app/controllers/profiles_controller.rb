@@ -7,7 +7,6 @@ class ProfilesController < ApplicationController
     page_number = params["page"].to_i || 1
     pagination = 100
 
-    @mxid_to_name = generate_mxid_to_name
     @matrix_hs_url = SocialLink::Application.credentials.matrix_hs_url
 
     @person = fetch_posts(params["uuid"], params["filters"] || {})
@@ -759,31 +758,5 @@ class ProfilesController < ApplicationController
     @timestamps[:facebook_messenger] = FacebookMessage.pluck(:timestamp).sort
     @timestamps[:hangouts] = HangoutsEvent.pluck(:timestamp).sort
     @timestamps[:pidgin] = PidginMessage.pluck(:timestamp).sort
-  end
-
-  def generate_mxid_to_name
-    @contacts = []
-    address_books = YAML.load(File.read("contacts.yml"))
-    address_books.each do |key, value|
-      value.each do |contact|
-        @contacts << {contact: contact, address_book: key}
-      end
-    end
-
-    @mxid_to_name = {}
-    @contacts.each do |contact|
-      vcard = VCardigan.parse(contact[:contact][:card])
-      uid = vcard.uid.first.values[0]
-      name = vcard.fn.first.values[0]
-
-      if vcard.field('impp')
-        vcard.field('impp').each do |profile|
-          if profile.value.match(/@(.*):(.*)\.(.*)/)
-            @mxid_to_name[profile.value] = name
-          end
-        end
-      end
-    end
-    return @mxid_to_name
   end
 end

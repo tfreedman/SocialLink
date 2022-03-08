@@ -1,9 +1,11 @@
 <% json = JSON.parse(post[:content][:content]) %>
+<% snpc = ServiceNamePathCache.where(service: 'Matrix', username: post[:content][:sender]).first %>
+<% name = (snpc && snpc.name) || nil %>
 <% if json["msgtype"] == 'm.text' %>
-  <p class="<% if @mxid_to_name[post[:content][:sender]] != SocialLink::Application.credentials.my_name %>sent<% else %>received<% end %>">
-    <% if @person[:name].start_with?('#') # Group Chat %>
-      <% if @mxid_to_name[post[:content][:sender]] != SocialLink::Application.credentials.my_name %>
-        <small class="sender"><%= @mxid_to_name[post[:content][:sender]] || post[:content][:sender] %>: </small>
+  <p class="<% if name != SocialLink::Application.credentials.my_name %>sent<% else %>received<% end %>">
+    <% if person[:name].start_with?('#') # Group Chat %>
+      <% if name != SocialLink::Application.credentials.my_name %>
+        <small class="sender"><%= name || post[:content][:sender] %>: </small>
         <br />
       <% end %>
     <% end %>
@@ -19,10 +21,10 @@
   </a>
   <p style="text-align: center"><em>(<a href="https://<%= @matrix_hs_url %>/_matrix/media/r0/download/<%= json['url'].split('mxc://')[1] %>"><%= json["body"] %></a>)</em></p>
 <% elsif json["msgtype"] == 'm.emote' %>
-  <p class="<% if @mxid_to_name[post[:content][:sender]] != SocialLink::Application.credentials.my_name %>sent<% else %>received<% end %>">
-    <% if @person[:name].start_with?('#') # Group Chat %>
-      <% if @mxid_to_name[post[:content][:sender]] != SocialLink::Application.credentials.my_name %>
-        <small class="sender"><%= @mxid_to_name[post[:content][:sender]] || post[:content][:sender] %>: </small>
+  <p class="<% if name != SocialLink::Application.credentials.my_name %>sent<% else %>received<% end %>">
+    <% if person[:name].start_with?('#') # Group Chat %>
+      <% if name != SocialLink::Application.credentials.my_name %>
+        <small class="sender"><%= name || post[:content][:sender] %>: </small>
         <br />
       <% end %>
     <% end %>
