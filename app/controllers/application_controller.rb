@@ -44,44 +44,40 @@ class ApplicationController < ActionController::Base
 
     contacts.each do |contact|
       vcard = VCardigan.parse(contact[:card])
+      uid = vcard.uid.first.values[0]
 
-      youtube_accounts = []
-      reddit_accounts = []
-      instagram_accounts = []
-      deviantart_accounts = []
-      pixiv_accounts = []
-      tumblr_accounts = []
-      facebook_accounts = []
-      twitter_accounts = []
-      phone_numbers = []
-      matrix_accounts = []
-      webcomics = []
-      accounts = []
+      if vcard.field('impp')
+        vcard.field('impp').each do |profile|
+          if profile.value.match(/@(.*):(.*)\.(.*)/)
+            ServiceNamePathCache.create(uid: uid, service: 'Matrix', name: vcard.fn.first.values[0], username: profile.value, updated_at: start_time)
+          end
+        end
+      end
 
       if vcard.field('x-socialprofile')
         vcard.field('x-socialprofile').each do |profile|
           if profile.value.include?("youtube.com")
-            ServiceNamePathCache.create(service: 'YouTube', name: vcard.fn.first.values[0], username: profile.value.split('youtube.com/channel/')[1], updated_at: start_time)
+            ServiceNamePathCache.create(uid: uid, service: 'YouTube', name: vcard.fn.first.values[0], username: profile.value.split('youtube.com/channel/')[1], updated_at: start_time)
           elsif profile.value.include?("wc://")
-            ServiceNamePathCache.create(service: 'Webcomic', name: vcard.fn.first.values[0], username: profile.value.split('#')[1], updated_at: start_time)
+            ServiceNamePathCache.create(uid: uid, service: 'Webcomic', name: vcard.fn.first.values[0], username: profile.value.split('#')[1], updated_at: start_time)
           elsif profile.value.include?("reddit.com/user/") || profile.value.include?("reddit.com/u/")
-            ServiceNamePathCache.create(service: 'Reddit', name: vcard.fn.first.values[0], username: profile.value.split('/')[-1], updated_at: start_time)
+            ServiceNamePathCache.create(uid: uid, service: 'Reddit', name: vcard.fn.first.values[0], username: profile.value.split('/')[-1], updated_at: start_time)
           elsif profile.value.include?("instagram.com/")
-            ServiceNamePathCache.create(service: 'Instagram', name: vcard.fn.first.values[0], username: InstagramAccount.where(username: profile.value.split('instagram.com/')[1].split('/')[0]).first.instagram_id, updated_at: start_time)
+            ServiceNamePathCache.create(uid: uid, service: 'Instagram', name: vcard.fn.first.values[0], username: InstagramAccount.where(username: profile.value.split('instagram.com/')[1].split('/')[0]).first.instagram_id, updated_at: start_time)
           elsif profile.value.include?("deviantart.com/")
-            ServiceNamePathCache.create(service: 'DeviantArt', name: vcard.fn.first.values[0], username: profile.value.split('deviantart.com/')[1].split('/')[0].downcase, updated_at: start_time)
+            ServiceNamePathCache.create(uid: uid, service: 'DeviantArt', name: vcard.fn.first.values[0], username: profile.value.split('deviantart.com/')[1].split('/')[0].downcase, updated_at: start_time)
           elsif profile.value.include?("pixiv.net/")
             if profile.value.include?("pixiv.net/member")
-              ServiceNamePathCache.create(service: 'Pixiv', name: vcard.fn.first.values[0], username: profile.value.split('id=')[1], updated_at: start_time)
+              ServiceNamePathCache.create(uid: uid, service: 'Pixiv', name: vcard.fn.first.values[0], username: profile.value.split('id=')[1], updated_at: start_time)
             elsif profile.value.include?('pixiv.net/') && profile.value.include?('users/')
-              ServiceNamePathCache.create(service: 'Pixiv', name: vcard.fn.first.values[0], username: profile.value.split('users/')[1].split('/')[0], updated_at: start_time)
+              ServiceNamePathCache.create(uid: uid, service: 'Pixiv', name: vcard.fn.first.values[0], username: profile.value.split('users/')[1].split('/')[0], updated_at: start_time)
             end
           elsif profile.value.include?("tumblr.com")
-            ServiceNamePathCache.create(service: 'Tumblr', name: vcard.fn.first.values[0], username: profile.value.split('.tumblr.com')[0].split('://')[1], updated_at: start_time)
+            ServiceNamePathCache.create(uid: uid, service: 'Tumblr', name: vcard.fn.first.values[0], username: profile.value.split('.tumblr.com')[0].split('://')[1], updated_at: start_time)
           elsif profile.value.include?("facebook.com/")
-            ServiceNamePathCache.create(service: 'Facebook', name: vcard.fn.first.values[0], username: profile.value.split('facebook.com/')[1].split('/')[0], updated_at: start_time)
+            ServiceNamePathCache.create(uid: uid, service: 'Facebook', name: vcard.fn.first.values[0], username: profile.value.split('facebook.com/')[1].split('/')[0], updated_at: start_time)
           elsif profile.value.include?("twitter.com/")
-            ServiceNamePathCache.create(service: 'Twitter', name: vcard.fn.first.values[0], username: profile.value.split('twitter.com/')[1].split('/')[0], updated_at: start_time)
+            ServiceNamePathCache.create(uid: uid, service: 'Twitter', name: vcard.fn.first.values[0], username: profile.value.split('twitter.com/')[1].split('/')[0], updated_at: start_time)
           end
         end
       end
