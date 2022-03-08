@@ -1,0 +1,39 @@
+<% if post[:content][:is_retweet] %><h2><a href="https://twitter.com/i/status/<%= post[:content][:tweet_id] %>"> RT <% if post[:content][:retweet_data] %><%= post[:content][:retweet_data][:username] %><% else %>Unknown<% end %></a></h2><% end %>
+<% tweet = post[:content].text %>
+<% tweet = tweet.gsub(/pic\.twitter\.com\/[a-zA-Z0-9]*/, '') %>
+<% tweet = tweet.gsub(/(https:\/\/t.co\/).*/).with_index { |_, i|
+  "<a href=\"#{post[:content].entries[:urls][i]}\">#{post[:content].entries[:urls][i]}</a>"
+  }
+%>
+<% tweet = tweet.gsub("\n", '<br />') %>
+<%= raw(tweet) %>
+
+<% if post[:content]['is_quoting'] && post[:content].quoting_data %>
+  <br /><br />
+  <strong><a href="https://twitter.com<%= post[:content].quoting_data[:permalink] %>"><%= post[:content].quoting_data[:username] %>:</a></strong>
+  <div style="padding-left: 20px">
+    <% if post[:content].quoting && post[:content].quoting.text %>
+    <% tweet = post[:content].quoting.text %>
+    <% else %>
+      <% tweet = '' %>
+    <% end %>
+    <% tweet = tweet.gsub(/pic\.twitter\.com\/[a-zA-Z0-9]*/, '') %>
+    <% tweet = tweet.gsub(/(https:\/\/t.co\/).*/).with_index { |_, i|
+      "<a href=\"#{post[:content].quoting.entries[:urls][i]}\">#{post[:content].quoting.entries[:urls][i]}</a>"
+      }
+    %>
+    <% tweet = tweet.gsub("\n", '<br />') %>
+    <%= raw(tweet) %>
+  </div>
+<% end %>
+
+<% if post[:content][:is_retweet] && post[:content].original %>
+  <% photos = post[:content].original[:entries][:photos] %>
+<% else %>
+  <% photos = post[:content][:entries][:photos] %>
+<% end %>
+<% photos.each do |photo| %>
+  <a href="/media/<%= person[:name] %>/Twitter/<%= @twitter_id_to_username[post[:content][:user_id]] %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" data-fancybox="twitter_<%= post[:content][:tweet_id] %>">
+    <img src="/media/<%= person[:name] %>/Twitter/<%= @twitter_id_to_username[post[:content][:user_id]] %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" />
+  </a>
+<% end %>

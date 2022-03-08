@@ -110,26 +110,7 @@
     </div>
     <div class="content">
       <% if post[:type] == "youtube_video" %>
-        <h2>
-          <a style="max-width: 530px; display: inline-block" href="https://www.youtube.com/watch?v=<%= post[:content][:video_id] %>"><%= post[:content][:title] %></a>
-
-          <span style="float: right">
-            <% if post[:content][:filename] && post[:content][:saved] %>
-              <i class="fas fa-save"></i>  
-            <% else %>
-              <i class="far fa-save" style="opacity: 0.5"></i>
-            <% end %>
-          </span>
-        </h2>
-        <%
-          json = JSON.parse(post[:content][:item])
-          if json['snippet']['thumbnails']['maxres']
-            url = json['snippet']['thumbnails']['maxres']['url']
-          elsif json['snippet']['thumbnails']['high']
-            url = json['snippet']['thumbnails']['high']['url']
-          end
-        %>
-        <a data-fancybox href="https://www.youtube.com/watch?v=<%= post[:content][:video_id] %>"><img src="<%= url %>" /></a>
+        <%= render :partial => 'posts/youtube_video' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "webcomics_strip" %>
         <% json = JSON.parse(post[:content][:payload]) %>
         <h2>
@@ -144,39 +125,7 @@
           <img src="/media/<%= @person[:name] %>/Webcomic/<%= post[:content][:comic] %>/<%= post[:content][:filename] %>" />
         </a>
       <% elsif post[:type] == "matrix_event" %>
-        <% json = JSON.parse(post[:content][:content]) %>
-        <% if json["msgtype"] == 'm.text' %>
-          <p class="<% if @mxid_to_name[post[:content][:sender]] != SocialLink::Application.credentials.my_name %>sent<% else %>received<% end %>">
-            <% if @person[:name].start_with?('#') # Group Chat %>
-              <% if @mxid_to_name[post[:content][:sender]] != SocialLink::Application.credentials.my_name %>
-                <small class="sender"><%= @mxid_to_name[post[:content][:sender]] || post[:content][:sender] %>: </small>
-                <br />
-              <% end %>
-            <% end %>
-            <%= json["body"] %>
-          </p>
-        <% elsif json["msgtype"] == 'm.image' %>
-          <p><a data-fancybox href="https://<%= @matrix_hs_url %>/_matrix/media/r0/download/<%= json['url'].split('mxc://')[1] %>"><img src="https://<%= @matrix_hs_url %>/_matrix/media/r0/download/<%= json['url'].split('mxc://')[1] %>" /></a><br /><%= json["body"] %></p>
-        <% elsif json["msgtype"] == 'm.video' %>
-          <a data-fancybox href="https://<%= @matrix_hs_url %>/_matrix/media/r0/download/<%= json['url'].split('mxc://')[1] %>">
-            <video controls preload="metadata">
-              <source src="https://<%= @matrix_hs_url %>/_matrix/media/r0/download/<%= json['url'].split('mxc://')[1] %>" />
-            </video>
-          </a>
-          <p style="text-align: center"><em>(<a href="https://<%= @matrix_hs_url %>/_matrix/media/r0/download/<%= json['url'].split('mxc://')[1] %>"><%= json["body"] %></a>)</em></p>
-        <% elsif json["msgtype"] == 'm.emote' %>
-          <p class="<% if @mxid_to_name[post[:content][:sender]] != SocialLink::Application.credentials.my_name %>sent<% else %>received<% end %>">
-            <% if @person[:name].start_with?('#') # Group Chat %>
-              <% if @mxid_to_name[post[:content][:sender]] != SocialLink::Application.credentials.my_name %>
-                <small class="sender"><%= @mxid_to_name[post[:content][:sender]] || post[:content][:sender] %>: </small>
-                <br />
-              <% end %>
-            <% end %>
-            /me <%= json["body"] %>
-          </p>
-        <% else %>
-          <p><%= post[:content][:content] %></p>
-        <% end %>
+        <%= render :partial => 'posts/matrix_event' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "pidgin_message" %>
         <p class="<% if post[:content][:real_sender] == @person[:name] %>sent<% else %>received<% end %>"><%= raw post[:content]["message"] %></p>
       <% elsif post[:type] == "android_sms" %>
@@ -204,45 +153,7 @@
           <p class="<% if post[:content]['sender_name'] != SocialLink::Application.credentials.my_name %>sent<% else %>received<% end %>"><%= post[:content]["content"] %></p>
         <% end %>
       <% elsif ["twitter_tweet", "twitter_retweet"].include?(post[:type]) %>
-        <% if post[:content][:is_retweet] %><h2><a href="https://twitter.com/i/status/<%= post[:content][:tweet_id] %>"> RT <% if post[:content][:retweet_data] %><%= post[:content][:retweet_data][:username] %><% else %>Unknown<% end %></a></h2><% end %>
-        <% tweet = post[:content].text %>
-        <% tweet = tweet.gsub(/pic\.twitter\.com\/[a-zA-Z0-9]*/, '') %>
-        <% tweet = tweet.gsub(/(https:\/\/t.co\/).*/).with_index { |_, i|
-          "<a href=\"#{post[:content].entries[:urls][i]}\">#{post[:content].entries[:urls][i]}</a>"
-          } 
-        %>
-        <% tweet = tweet.gsub("\n", '<br />') %>
-        <%= raw(tweet) %>
-
-        <% if post[:content]['is_quoting'] && post[:content].quoting_data %>
-          <br /><br />
-          <strong><a href="https://twitter.com<%= post[:content].quoting_data[:permalink] %>"><%= post[:content].quoting_data[:username] %>:</a></strong>
-          <div style="padding-left: 20px">
-            <% if post[:content].quoting && post[:content].quoting.text %>
-            <% tweet = post[:content].quoting.text %>
-            <% else %>
-              <% tweet = '' %>
-            <% end %>
-            <% tweet = tweet.gsub(/pic\.twitter\.com\/[a-zA-Z0-9]*/, '') %>
-            <% tweet = tweet.gsub(/(https:\/\/t.co\/).*/).with_index { |_, i|
-              "<a href=\"#{post[:content].quoting.entries[:urls][i]}\">#{post[:content].quoting.entries[:urls][i]}</a>"
-              }
-            %>
-            <% tweet = tweet.gsub("\n", '<br />') %>
-            <%= raw(tweet) %>
-          </div>
-        <% end %>
-
-        <% if post[:content][:is_retweet] && post[:content].original %>
-          <% photos = post[:content].original[:entries][:photos] %>
-        <% else %>
-          <% photos = post[:content][:entries][:photos] %>
-        <% end %>
-        <% photos.each do |photo| %>
-          <a href="/media/<%= @person[:name] %>/Twitter/<%= @twitter_id_to_username[post[:content][:user_id]] %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" data-fancybox="twitter_<%= post[:content][:tweet_id] %>">
-            <img src="/media/<%= @person[:name] %>/Twitter/<%= @twitter_id_to_username[post[:content][:user_id]] %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" />
-          </a>
-        <% end %>
+        <%= render :partial => 'posts/twitter_tweet' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "reddit_comment" %>
         <h2><a href="<%= post[:content][:link_permalink] %><%= post[:content][:reddit_id] %>"><%= post[:content][:link_title] %> (<%= post[:content][:subreddit_name_prefixed] %>)</a></h2>
         <%= post[:content][:author] %>: <%= raw(post[:content][:body]) %>
@@ -297,71 +208,11 @@
         <% text = x.css('tumblr post').text %>
         <%= raw(text) %>
       <% elsif post[:type] == "instagram_post" %>
-        <% json = JSON.parse(post[:content][:json]) %>
-        <h2>
-          <% if json['__typename'] == 'GraphSidecar' %>
-            <span style="float: right">
-              <a data-fancybox-trigger="instagram_<%= post[:content][:shortcode] %>"><i class="fas fa-layer-group"></i> <%= json["edge_sidecar_to_children"]["edges"].count %></a>
-            </span>
-          <% end %>
-        </h2>
-
-        <% node = 0 %>
-        <% loop do %>
-          <% if json['__typename'] == 'GraphSidecar' %>
-            <% object = json['edge_sidecar_to_children']['edges'][node]["node"] %>
-          <% else %>
-            <% object = json %>
-          <% end %>
-  
-          <% if object['__typename'] == 'GraphVideo' %>
-            <% media_url = object["video_url"] %>
-            <% media_type = 'video' %>
-          <% elsif object['__typename'] == 'GraphImage' %>
-            <% media_url = object["display_url"] %>
-            <% media_type = 'image' %>
-          <% end %>
-
-          <% if media_url %>
-            <% media_name = media_url.split('/')[-1].split('?')[0] %>
-            <% folder = "#{InstagramAccount.where(instagram_id: json['owner']['id']).first.username} %28#{json['owner']['id']}%29" %>
-            <% if media_url %>
-              <a data-fancybox="instagram_<%= post[:content][:shortcode] %>" href="/media/<%= @person[:name] %>/Instagram/<%= folder %>/<%= media_name %>">
-                <% if media_type == 'image' %>
-                  <img src="/media/<%= @person[:name] %>/Instagram/<%= folder %>/<%= media_name %>" <% if node > 0 %>style="display: none"<% end %> />
-                <% elsif media_type == 'video' %>
-                  <video controls preload="metadata" <% if node > 0 %>style="display: none"<% end %>>
-                    <source src="/media/<%= @person[:name] %>/Instagram/<%= folder %>/<%= media_name %>"/>
-                  </video>
-                <% end %>
-              </a>
-            <% end %>
-            <% if node == 0 %>
-              <% begin %>
-                <p><%= json["edge_media_to_caption"]["edges"][0]["node"]["text"] %></p>
-              <% rescue %>
-              <% end %>
-            <% end %>
-          <% end %>
-          <% break if json['edge_sidecar_to_children'].nil? || json['edge_sidecar_to_children']['edges'][node + 1].nil? %>
-          <% node += 1 %>
-        <% end %>
+        <%= render :partial => 'posts/instagram_post' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "instagram_story" %>
-        <a data-fancybox="instagram_<%= post[:content][:filename] %>" href="/media/<%= @person[:name] %>/Instagram/<%= "#{post[:folder]} %28#{post[:content][:instagram_user_id]}%29" %>/<%= post[:content][:filename] %>">
-          <% if ['webp', 'jpg', 'jpeg'].include?(post[:content][:filename].split('.')[-1].downcase) %>
-            <img src="/media/<%= @person[:name] %>/Instagram/<%= "#{post[:folder]} %28#{post[:content][:instagram_user_id]}%29" %>/<%= post[:content][:filename] %>" />
-          <% elsif post[:content][:filename].split('.')[-1].downcase == "mp4" %>
-            <video controls preload="metadata">
-              <source src="/media/<%= @person[:name] %>/Instagram/<%= "#{post[:folder]} %28#{post[:content][:instagram_user_id]}%29" %>/<%= post[:content][:filename] %>" />
-            </video>
-          <% end %>
-        </a>
+        <%= render :partial => 'posts/instagram_story' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "deviantart_post" %>
-        <% json = JSON.parse(post[:content][:json_dump]) %>
-        <h2><a href="https://www.deviantart.com/<%= post[:content][:username] %>/art/<%= post[:content][:post_id] %>"><%= json["title"] %></a></h2>
-        <a data-fancybox="deviantart_<%= post[:content][:filename] %>" href="/media/<%= @person[:name] %>/DeviantArt/<%= post[:content][:username] %>/<%= post[:content][:filename] %>">
-          <img src="/media/<%= @person[:name] %>/DeviantArt/<%= post[:content][:username] %>/<%= post[:content][:filename] %>" />
-        </a>
+        <%= render :partial => 'posts/deviantart_post' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "pixiv_post" %>
         <%= render :partial => 'posts/pixiv' , locals: {post: post, person: @person, details: false} %>
       <% end %>
