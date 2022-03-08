@@ -1,0 +1,16 @@
+<% json = JSON.parse(post[:content][:payload]) %>
+<h2>
+  <% if json["url"] && !json["url"].nil? %>
+    <a href="<%= post[:content][:url] %>"><%= json["title"] %></a>
+  <% else %>
+    <%= json["title"] %>
+  <% end %>
+</h2>
+
+<a data-fancybox="webcomics_strip_<%= post[:content][:filename] %>" href="/media/<%= person[:name] %>/Webcomic/<%= post[:content][:comic] %>/<%= post[:content][:filename] %>">
+  <img src="/media/<%= person[:name] %>/Webcomic/<%= post[:content][:comic] %>/<%= post[:content][:filename] %>" />
+</a>
+
+<% if json && json["alt"] %>
+  <em><%= json['alt'] %></em>
+<% end %>

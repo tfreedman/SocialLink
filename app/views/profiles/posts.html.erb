@@ -112,18 +112,7 @@
       <% if post[:type] == "youtube_video" %>
         <%= render :partial => 'posts/youtube_video' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "webcomics_strip" %>
-        <% json = JSON.parse(post[:content][:payload]) %>
-        <h2>
-          <% if json["url"] && !json["url"].nil? %>
-            <a href="<%= post[:content][:url] %>"><%= json["title"] %></a>
-          <% else %>
-            <%= json["title"] %>
-          <% end %>
-        </h2>
-      
-        <a data-fancybox="webcomics_strip_<%= post[:content][:filename] %>" href="/media/<%= @person[:name] %>/Webcomic/<%= post[:content][:comic] %>/<%= post[:content][:filename] %>">
-          <img src="/media/<%= @person[:name] %>/Webcomic/<%= post[:content][:comic] %>/<%= post[:content][:filename] %>" />
-        </a>
+        <%= render :partial => 'posts/webcomics_strip' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "matrix_event" %>
         <%= render :partial => 'posts/matrix_event' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "pidgin_message" %>
