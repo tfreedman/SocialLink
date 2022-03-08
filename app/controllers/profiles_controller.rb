@@ -351,13 +351,11 @@ class ProfilesController < ApplicationController
 
         if tumblr_posts
           tumblr_posts.each do |t|
-            x = Nokogiri::HTML.parse(t.xml_dump)
-            text = x.css('tumblr regular-body').text
-            posts << {sort_time: x.css('posts post')[0] ? x.css('posts post')[0].attribute('unix-timestamp').value.to_i : 0, type: "tumblr_#{t.post_type}", content: t, text: text}
+            posts << {sort_time: t.timestamp.to_i, type: "tumblr_#{t.post_type}", content: t, text: text}
             if last_timestamps["tumblr_#{t.post_type}"].nil?
               last_timestamps["tumblr_#{t.post_type}"] = []
             end
-            last_timestamps["tumblr_#{t.post_type}"] << (x.css('posts post')[0] ? x.css('posts post')[0].attribute('unix-timestamp').value.to_i : 0)
+            last_timestamps["tumblr_#{t.post_type}"] << (t.timestamp.to_i)
           end
         end
 
