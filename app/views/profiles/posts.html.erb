@@ -122,17 +122,9 @@
       <% elsif post[:type] == "windows_phone_sms" %>
         <p class="<% if post[:content]['is_sent'] %>sent<% else %>received<% end %>"><%= post[:content]["body"] %></p>
       <% elsif post[:type] == "mamirc_event" %>
-        <% if @person[:name].start_with?('#') # Group Chat %>
-          <p class="<% if post[:content][:real_sender] != SocialLink::Application.credentials.my_name %>sent<% else %>received<% end %>"><% if post[:content][:real_sender] != SocialLink::Application.credentials.my_name %><small class="sender"><%= post[:content][:real_sender] || post[:content][:username] %>: </small><br /><% end %><%= post[:content][:data].split('PRIVMSG ')[1].split(' :')[1] %></p>
-        <% else # 1:1 Conversation %>
-          <p class="<% if post[:content][:real_sender] == @person[:name] %>sent<% else %>received<% end %>"><%= post[:content][:data].split('PRIVMSG ')[1].split(' :')[1] %></p>
-        <% end %>
+        <%= render :partial => 'posts/mamirc_event' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "colloquy_message" %>
-        <% if @person[:name].start_with?('#') # Group Chat %>
-          <p class="<% if post[:content][:real_sender] != SocialLink::Application.credentials.my_name %>sent<% else %>received<% end %>"><% if post[:content][:real_sender] != SocialLink::Application.credentials.my_name %><small class="sender"><%= post[:content][:real_sender] || post[:content][:username] %>: </small><br /><% end %><%= post[:content][:message] %></p>
-        <% else %>
-          <p class="<% if post[:content][:real_sender] == @person[:name] %>sent<% else %>received<% end %>"><%= post[:content][:message] %></p>
-        <% end %>
+        <%= render :partial => 'posts/colloquy_message' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "hangouts_event" %>
         <% post[:content][:chat_message]["message_content"]["segment"].each do |segment| %>
           <p class="<% if post[:content][:real_name] == @person[:name] %>sent<% else %>received<% end %>"><%= segment["text"] %></p>
@@ -148,54 +140,8 @@
         <%= post[:content][:author] %>: <%= raw(post[:content][:body]) %>
       <% elsif ['facebook_photo', 'facebook_photo_of', 'facebook_post', 'facebook_album'].include?(post[:type]) %>
         <%= render :partial => 'posts/facebook_post' , locals: {post: post, person: @person, details: false} %>
-      <% elsif post[:type] == "tumblr_post-content--text" %>
-        <%= raw(post[:text]) %>
-      <% elsif post[:type] == "tumblr_post-content--video" %>
-        <% x = Nokogiri::HTML.parse(post[:content][:xml_dump]) %>
-        <% text = x.css('tumblr post').text %>
-        <% begin %>
-          <% url = "https://ve.media.tumblr.com/" + Nokogiri::HTML.parse(x.css('video-player')[0].text).css('source').attribute('src').text.split('/')[-2] + '_480.mp4' %>
-          <video controls preload="metadata">
-            <source src="<%= url %>" />
-          </video>
-        <% rescue %>
-          video
-        <% end %>
-      <% elsif post[:type] == "tumblr_post-content--audio" %>
-        <% x = Nokogiri::HTML.parse(post[:content][:xml_dump]) %>
-        <% text = x.css('tumblr post').text %>
-        <%= raw(text) %>
-        audio
-      <% elsif post[:type] == "tumblr_post-content--chat" %>
-        <%= raw(post[:text]) %>
-        chat
-      <% elsif post[:type] == "tumblr_post-content--link" %>
-        <%= raw(post[:text]) %>
-        link
-      <% elsif post[:type] == "tumblr_post-content--quote" %>
-        <%= raw(post[:text]) %>
-        quote
-      <% elsif post[:type] == "tumblr_post-content--iframe" %>
-        <%= raw(post[:text]) %>
-        iframe
-      <% elsif post[:type] == "tumblr_post-content--photo" %>
-        <% output = Nokogiri::XML.parse(post[:content][:xml_dump]) %>
-        <% if output.css('photo-caption').count > 0 %>
-          <%= raw(output.css('photo-caption')[0].text || '') %>
-        <% end %>
-        <% last_photo = nil %>
-        <% output.css('photo-url[max-width="1280"]').each do |photo| %>
-          <% if last_photo != photo.text.split('/')[-1] %>
-            <a data-fancybox="tumblr_<%= post[:content][:post_id] %>" href="/media/<%= @person[:name] %>/Tumblr/<%= post[:content][:username] %>/<%= photo.text.split('/')[-1] %>">
-              <img src="/media/<%= @person[:name] %>/Tumblr/<%= post[:content][:username] %>/<%= photo.text.split('/')[-1] %>" />
-            </a>
-            <% last_photo = photo.text.split('/')[-1] %>
-          <% end %>
-        <% end %>
-      <% elsif post[:type] == "tumblr_post-content--answer" %>
-        <% x = Nokogiri::HTML.parse(post[:content][:xml_dump]) %>
-        <% text = x.css('tumblr post').text %>
-        <%= raw(text) %>
+      <% elsif post[:type].start_with?('tumblr_post-content') %>
+        <%= render :partial => 'posts/tumblr_post' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "instagram_post" %>
         <%= render :partial => 'posts/instagram_post' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "instagram_story" %>
@@ -203,7 +149,7 @@
       <% elsif post[:type] == "deviantart_post" %>
         <%= render :partial => 'posts/deviantart_post' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "pixiv_post" %>
-        <%= render :partial => 'posts/pixiv' , locals: {post: post, person: @person, details: false} %>
+        <%= render :partial => 'posts/pixiv' , locals: {post: post, person: @person} %>
       <% end %>
     </div>
   </li>

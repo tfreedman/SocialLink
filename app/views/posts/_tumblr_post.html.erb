@@ -1,0 +1,49 @@
+<% if post[:type] == "tumblr_post-content--text" %>
+  <%= raw(post[:text]) %>
+<% elsif post[:type] == "tumblr_post-content--video" %>
+  <% x = Nokogiri::HTML.parse(post[:content][:xml_dump]) %>
+  <% text = x.css('tumblr post').text %>
+  <% begin %>
+    <% url = "https://ve.media.tumblr.com/" + Nokogiri::HTML.parse(x.css('video-player')[0].text).css('source').attribute('src').text.split('/')[-2] + '_480.mp4' %>
+    <video controls preload="metadata">
+      <source src="<%= url %>" />
+     </video>
+  <% rescue %>
+     video
+  <% end %>
+<% elsif post[:type] == "tumblr_post-content--audio" %>
+  <% x = Nokogiri::HTML.parse(post[:content][:xml_dump]) %>
+  <% text = x.css('tumblr post').text %>
+  <%= raw(text) %>
+  audio
+<% elsif post[:type] == "tumblr_post-content--chat" %>
+  <%= raw(post[:text]) %>
+  chat
+<% elsif post[:type] == "tumblr_post-content--link" %>
+  <%= raw(post[:text]) %>
+  link
+<% elsif post[:type] == "tumblr_post-content--quote" %>
+  <%= raw(post[:text]) %>
+  quote
+<% elsif post[:type] == "tumblr_post-content--iframe" %>
+  <%= raw(post[:text]) %>
+  iframe
+<% elsif post[:type] == "tumblr_post-content--photo" %>
+  <% output = Nokogiri::XML.parse(post[:content][:xml_dump]) %>
+  <% if output.css('photo-caption').count > 0 %>
+     <%= raw(output.css('photo-caption')[0].text || '') %>
+  <% end %>
+  <% last_photo = nil %>
+  <% output.css('photo-url[max-width="1280"]').each do |photo| %>
+    <% if last_photo != photo.text.split('/')[-1] %>
+      <a data-fancybox="tumblr_<%= post[:content][:post_id] %>" href="/media/<%= person[:name] %>/Tumblr/<%= post[:content][:username] %>/<%= photo.text.split('/')[-1] %>">
+        <img src="/media/<%= person[:name] %>/Tumblr/<%= post[:content][:username] %>/<%= photo.text.split('/')[-1] %>" />
+      </a>
+      <% last_photo = photo.text.split('/')[-1] %>
+    <% end %>
+  <% end %>
+<% elsif post[:type] == "tumblr_post-content--answer" %>
+  <% x = Nokogiri::HTML.parse(post[:content][:xml_dump]) %>
+  <% text = x.css('tumblr post').text %>
+  <%= raw(text) %>
+<% end %>
