@@ -39,11 +39,6 @@ class ProfilesController < ApplicationController
 
     @contacts.each do |contact|
       vcard = VCardigan.parse(contact[:contact][:card])
-      if vcard.photo
-        photo = vcard.photo[0].values[0]
-      else
-        photo = nil
-      end
 
       if uid == vcard.uid.first.values[0]
         youtube_accounts = []
@@ -476,7 +471,7 @@ class ProfilesController < ApplicationController
         posts.each do |post|
           timestamps << post[:sort_time]
         end
-        @person = {name: vcard.fn.first.values[0], uid: uid, photo: photo, vcard: vcard, posts: posts.uniq, post_count: posts.count, accounts: accounts, timestamps: timestamps, address_book: contact[:address_book], last_timestamps: last_timestamps}
+        @person = {name: vcard.fn.first.values[0], uid: uid, vcard: vcard, posts: posts.uniq, post_count: posts.count, accounts: accounts, timestamps: timestamps, address_book: contact[:address_book], last_timestamps: last_timestamps}
       end
     end
     return @person
@@ -543,6 +538,12 @@ class ProfilesController < ApplicationController
 
       if uid == params["uuid"]
         @person = fetch_posts(uid, {})
+
+        if vcard.photo
+          @person[:photo] = vcard.photo[0].values[0]
+        else
+          @person[:photo] = nil
+        end
 
         @filters = SocialLinkContact.where(uid: uid).first.default_filters || ApplicationController::SUPPORTED_TYPES
       end
