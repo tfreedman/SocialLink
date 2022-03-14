@@ -13,10 +13,6 @@ gem 'puma', '~> 5.0'
 gem 'sass-rails', '>= 6'
 # Transpile app-like JavaScript. Read more: https://github.com/rails/webpacker
 gem 'webpacker', '~> 5.0'
-# Turbolinks makes navigating your web application faster. Read more: https://github.com/turbolinks/turbolinks
-gem 'turbolinks', '~> 5'
-# Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
-gem 'jbuilder', '~> 2.7'
 # Use Redis adapter to run Action Cable in production
 # gem 'redis', '~> 4.0'
 # Use Active Model has_secure_password
@@ -63,8 +59,3 @@ gem 'rgb'
 # For importing Adium / Pidgin logs...
 # gem 'pipio', :path => 'vendor/bundle/pipio'
 # gem 'chat_stew', :path => 'vendor/bundle/chat_stew'
-
-# Ruby 3.1 bugfixes
-gem 'net-smtp', require: false
-gem 'net-imap', require: false
-gem 'net-pop', require: false
