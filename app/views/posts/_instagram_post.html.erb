@@ -22,9 +22,17 @@
     <% media_type = 'image' %>
   <% end %>
 
-  <% if media_url %>
+  <% account = InstagramAccount.where(instagram_id: json['owner']['id']).first %>
+  <% if account.nil? %>
+    <% json['coauthor_producers'].each do |producer| %>
+      <% account = InstagramAccount.where(instagram_id: producer['id']).first %>
+      <% break if account %>
+    <% end %>
+  <% end %>
+
+  <% if media_url && account %>
     <% media_name = media_url.split('/')[-1].split('?')[0] %>
-    <% folder = "#{InstagramAccount.where(instagram_id: json['owner']['id']).first.username} %28#{json['owner']['id']}%29" %>
+    <% folder = "#{account.username} %28#{account['instagram_id']}%29" %>
     <% if media_url %>
       <a data-fancybox="instagram_<%= post[:content][:shortcode] %>" href="/media/<%= @person[:name] %>/Instagram/<%= folder %>/<%= media_name %>">
         <% if media_type == 'image' %>
@@ -42,6 +50,8 @@
       <% rescue %>
       <% end %>
     <% end %>
+  <% else %>
+    <p>Problem parsing post <%= post[:content][:id] %></p>
   <% end %>
   <% break if json['edge_sidecar_to_children'].nil? || json['edge_sidecar_to_children']['edges'][node + 1].nil? %>
   <% node += 1 %>
