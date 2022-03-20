@@ -23,6 +23,15 @@ class ProfilesController < ApplicationController
     filtered_page_count = 1 if filtered_page_count == 0
     response.headers['Filtered-Page-Count'] = filtered_page_count
     @person[:posts] = @person[:posts][((page_number - 1) * pagination)..((page_number) * pagination)]
+    
+    # This is a hack to reduce memory usage
+    @person[:posts].each do |post|
+      if post[:id] && post[:type].start_with?('facebook')
+        post[:content] = FBID.where(id: post[:id]).first
+      elsif post[:id] && post[:type].start_with?('twitter')
+        post[:content] = TwitterTweet.where(id: post[:id]).first
+      end
+    end
     render :layout => false
   end
   
@@ -158,82 +167,76 @@ class ProfilesController < ApplicationController
   
         if filters["types"].nil? || (filters["types"] && (filters["types"].include?("facebook_photo_of") || filters["types"].include?("facebook_photo")))
           facebook_photos_of_edges = FBIDEdge.where(from: facebook_accounts, relationship: 'PHOTOTAGGEE_IS_IN_PHOTO').pluck(:to)
-          if !query_cache[:facebook_photos_of]
-            facebook_photos_of = FBID.where(fbid_type: 'photo', fb_account: facebook_accounts, fbid: facebook_photos_of_edges).all
-            query_cache[:facebook_photos_of] = []
-            facebook_photos_of.each do |f|
-              if f.mobile_html && !f.mobile_html.include?('The page you requested was not found')
-                query_cache[:facebook_photos_of] << f.id
+          if facebook_photos_of_edges.count > 0
+            if !query_cache[:facebook_photos_of]
+              query_cache[:facebook_photos_of] = []
+              FBID.where(fbid_type: 'photo', fb_account: facebook_accounts, fbid: facebook_photos_of_edges).find_each(batch_size: 100) do |f|
+                if f.mobile_html && !f.mobile_html.include?('The page you requested was not found')
+                  query_cache[:facebook_photos_of] << f.id
+                end
               end
+              sc.update(query_cache: query_cache)
             end
-            sc.update(query_cache: query_cache)
-          end
-          facebook_photos_of = FBID.where(id: query_cache[:facebook_photos_of]).all
-          if facebook_photos_of
             last_timestamps['facebook_photo_of'] = []
-            facebook_photos_of.each do |f|
-              posts << {sort_time: f.estimated_timestamp || 0, type: 'facebook_photo_of', content: f}
+            facebook_photos_of = []
+            FBID.where(id: query_cache[:facebook_photos_of]).find_each(batch_size: 100) do |f|
+              posts << {sort_time: f.estimated_timestamp || 0, type: 'facebook_photo_of', id: f.id}
+              facebook_photos_of << f.fbid
               last_timestamps['facebook_photo_of'] << (f.estimated_timestamp || 0)
             end
           end
 
-          if !query_cache[:facebook_photos]
-            facebook_photos = FBID.where(fbid_type: 'photo', fb_account: facebook_accounts, fbid: facebook_authored_edges).where.not(fbid: facebook_photos_of.pluck(:fbid)).all
-            query_cache[:facebook_photos] = []
-            facebook_photos.each do |f|
-              if f.mobile_html && !f.mobile_html.include?('The page you requested was not found')
-                query_cache[:facebook_photos] << f.id
+          if facebook_authored_edges.count > 0
+            if !query_cache[:facebook_photos]
+              query_cache[:facebook_photos] = []
+              FBID.where(fbid_type: 'photo', fb_account: facebook_accounts, fbid: facebook_authored_edges).where.not(fbid: facebook_photos_of).find_each(batch_size: 100) do |f|
+                if f.mobile_html && !f.mobile_html.include?('The page you requested was not found')
+                  query_cache[:facebook_photos] << f.id
+                end
               end
+              sc.update(query_cache: query_cache)
             end
-            sc.update(query_cache: query_cache)
-          end
-          facebook_photos = FBID.where(id: query_cache[:facebook_photos]).all
-          if facebook_photos
             last_timestamps['facebook_photo'] = []
-            facebook_photos.each do |f|
-              posts << {sort_time: f.estimated_timestamp || 0, type: 'facebook_photo', content: f}
+            FBID.where(id: query_cache[:facebook_photos]).find_each(batch_size: 100) do |f|
+              posts << {sort_time: f.estimated_timestamp || 0, type: 'facebook_photo', id: f.id}
               last_timestamps['facebook_photo'] << (f.estimated_timestamp || 0)
             end
           end
         end
 
         if filters["types"].nil? || (filters["types"] && filters["types"].include?("facebook_post"))
-          if !query_cache[:facebook_posts_authored]
-            facebook_posts_authored = FBID.where(fbid_type: 'post', fb_account: facebook_accounts, fbid: facebook_authored_edges).all
-            query_cache[:facebook_posts_authored] = []
-            facebook_posts_authored.each do |f|
-              if f.mobile_html && !f.mobile_html.include?('The page you requested was not found') && FBIDEdge.where(from: f.fbid, relationship: 'HAS_CNAME_FROM').first.nil?
-                query_cache[:facebook_posts_authored] << f.id
+          if facebook_authored_edges.count > 0
+            if !query_cache[:facebook_posts_authored]
+              query_cache[:facebook_posts_authored] = []
+              FBID.where(fbid_type: 'post', fb_account: facebook_accounts, fbid: facebook_authored_edges).find_each(batch_size: 100) do |f|
+                if f.mobile_html && !f.mobile_html.include?('The page you requested was not found') && FBIDEdge.where(from: f.fbid, relationship: 'HAS_CNAME_FROM').first.nil?
+                  query_cache[:facebook_posts_authored] << f.id
+                end
               end
+              sc.update(query_cache: query_cache)
             end
-            sc.update(query_cache: query_cache)
-          end
-          facebook_posts_authored = FBID.where(id: query_cache[:facebook_posts_authored]).all
-          if facebook_posts_authored
             last_timestamps['facebook_post'] = []
-            facebook_posts_authored.each do |f|
-              posts << {sort_time: f.estimated_timestamp || 0, type: 'facebook_post', content: f}
+            FBID.where(id: query_cache[:facebook_posts_authored]).find_each(batch_size: 100) do |f|
+              posts << {sort_time: f.estimated_timestamp || 0, type: 'facebook_post', id: f.id}
               last_timestamps['facebook_post'] << (f.estimated_timestamp || 0)
             end
           end
         end
 
         if filters["types"].nil? || (filters["types"] && filters["types"].include?("facebook_album"))
-          if !query_cache[:facebook_albums_authored]
-            facebook_albums_authored = FBID.where(fbid_type: 'album', fb_account: facebook_accounts, fbid: facebook_authored_edges).all
-            query_cache[:facebook_albums_authored] = []
-            facebook_albums_authored.each do |f|
-              if f.mobile_html && !f.mobile_html.include?('The page you requested was not found')
-                query_cache[:facebook_albums_authored] << f.id
+          if facebook_authored_edges.count > 0
+            if !query_cache[:facebook_albums_authored]
+              query_cache[:facebook_albums_authored] = []
+              FBID.where(fbid_type: 'album', fb_account: facebook_accounts, fbid: facebook_authored_edges).find_each(batch_size: 100) do |f|
+                if f.mobile_html && !f.mobile_html.include?('The page you requested was not found')
+                  query_cache[:facebook_albums_authored] << f.id
+                end
               end
+              sc.update(query_cache: query_cache)
             end
-            sc.update(query_cache: query_cache)
-          end
-          facebook_albums_authored = FBID.where(id: query_cache[:facebook_albums_authored]).all
-          if facebook_albums_authored
             last_timestamps['facebook_album'] = []
-            facebook_albums_authored.each do |f|
-              posts << {sort_time: f.estimated_timestamp || 0, type: 'facebook_album', content: f}
+            FBID.where(id: query_cache[:facebook_albums_authored]).find_each(batch_size: 100) do |f|
+              posts << {sort_time: f.estimated_timestamp || 0, type: 'facebook_album', id: f.id}
               last_timestamps['facebook_album'] << (f.estimated_timestamp || 0)
             end
           end
@@ -254,10 +257,22 @@ class ProfilesController < ApplicationController
           twitter_ids = TwitterAccount.where(uid: uid).pluck(:user_id)
           twitter_posts = []
           if filters["types"].nil? || (filters["types"] && filters["types"].include?("twitter_retweet"))
-            twitter_posts += TwitterTweet.where(user_id: twitter_ids, is_retweet: true).order('time DESC').all
+            TwitterTweet.where(user_id: twitter_ids, is_retweet: true).find_each do |t|
+              posts << {sort_time: t.time.to_i, type: t.is_retweet ? 'twitter_retweet' : 'twitter_tweet', id: t.id}
+              if last_timestamps[(t.is_retweet ? 'twitter_retweet' : 'twitter_tweet')].nil?
+                last_timestamps[(t.is_retweet ? 'twitter_retweet' : 'twitter_tweet')] = []
+              end
+              last_timestamps[(t.is_retweet ? 'twitter_retweet' : 'twitter_tweet')] << t.time.to_i
+            end
           end
           if filters["types"].nil? || (filters["types"] && filters["types"].include?("twitter_tweet"))
-            twitter_posts += TwitterTweet.where(user_id: twitter_ids, is_retweet: false).order('time DESC').all
+            TwitterTweet.where(user_id: twitter_ids, is_retweet: false).find_each do |t|
+              posts << {sort_time: t.time.to_i, type: t.is_retweet ? 'twitter_retweet' : 'twitter_tweet', id: t.id}
+              if last_timestamps[(t.is_retweet ? 'twitter_retweet' : 'twitter_tweet')].nil?
+                last_timestamps[(t.is_retweet ? 'twitter_retweet' : 'twitter_tweet')] = []
+              end
+              last_timestamps[(t.is_retweet ? 'twitter_retweet' : 'twitter_tweet')] << t.time.to_i
+            end
           end
         end
 
@@ -416,16 +431,6 @@ class ProfilesController < ApplicationController
               last_timestamps["tumblr_#{t.post_type}"] = []
             end
             last_timestamps["tumblr_#{t.post_type}"] << (t.timestamp.to_i)
-          end
-        end
-
-        if twitter_posts
-          twitter_posts.each do |t|
-            posts << {sort_time: t.time.to_i, type: t.is_retweet ? 'twitter_retweet' : 'twitter_tweet', content: t}
-            if last_timestamps[(t.is_retweet ? 'twitter_retweet' : 'twitter_tweet')].nil?
-              last_timestamps[(t.is_retweet ? 'twitter_retweet' : 'twitter_tweet')] = []
-            end
-            last_timestamps[(t.is_retweet ? 'twitter_retweet' : 'twitter_tweet')] << t.time.to_i
           end
         end
 
@@ -595,6 +600,15 @@ class ProfilesController < ApplicationController
       @timeline[:service_counts][post[:type]] += 1
     end
     @person[:posts] = @person[:posts].slice((@page_number.to_i - 1) * @pagination, @pagination)
+
+    # This is a hack to reduce memory usage
+    @person[:posts].each do |post|
+      if post[:id] && post[:type].start_with?('facebook')
+        post[:content] = FBID.where(id: post[:id]).first
+      elsif post[:id] && post[:type].start_with?('twitter')
+        post[:content] = TwitterTweet.where(id: post[:id]).first
+      end
+    end
 
     @person[:timestamps].each_with_index do |timestamp, index|
       time = Time.at(timestamp)
