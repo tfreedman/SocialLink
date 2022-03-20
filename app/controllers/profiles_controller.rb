@@ -41,6 +41,9 @@ class ProfilesController < ApplicationController
       vcard = VCardigan.parse(contact[:contact][:card])
 
       if uid == vcard.uid.first.values[0]
+        sc = SocialLinkContact.where(uid: vcard.uid.first.values[0]).first
+        query_cache = sc.query_cache || {}
+
         youtube_accounts = []
         reddit_accounts = []
         instagram_accounts = []
@@ -155,16 +158,85 @@ class ProfilesController < ApplicationController
   
         if filters["types"].nil? || (filters["types"] && (filters["types"].include?("facebook_photo_of") || filters["types"].include?("facebook_photo")))
           facebook_photos_of_edges = FBIDEdge.where(from: facebook_accounts, relationship: 'PHOTOTAGGEE_IS_IN_PHOTO').pluck(:to)
-          facebook_photos_of = FBID.where(fbid_type: 'photo', fb_account: facebook_accounts, fbid: facebook_photos_of_edges).all
-          facebook_photos = FBID.where(fbid_type: 'photo', fb_account: facebook_accounts, fbid: facebook_authored_edges).where.not(fbid: facebook_photos_of.pluck(:fbid)).all
+          if !query_cache[:facebook_photos_of]
+            facebook_photos_of = FBID.where(fbid_type: 'photo', fb_account: facebook_accounts, fbid: facebook_photos_of_edges).all
+            query_cache[:facebook_photos_of] = []
+            facebook_photos_of.each do |f|
+              if f.mobile_html && !f.mobile_html.include?('The page you requested was not found')
+                query_cache[:facebook_photos_of] << f.id
+              end
+            end
+            sc.update(query_cache: query_cache)
+          end
+          facebook_photos_of = FBID.where(id: query_cache[:facebook_photos_of]).all
+          if facebook_photos_of
+            last_timestamps['facebook_photo_of'] = []
+            facebook_photos_of.each do |f|
+              posts << {sort_time: f.estimated_timestamp || 0, type: 'facebook_photo_of', content: f}
+              last_timestamps['facebook_photo_of'] << (f.estimated_timestamp || 0)
+            end
+          end
+
+          if !query_cache[:facebook_photos]
+            facebook_photos = FBID.where(fbid_type: 'photo', fb_account: facebook_accounts, fbid: facebook_authored_edges).where.not(fbid: facebook_photos_of.pluck(:fbid)).all
+            query_cache[:facebook_photos] = []
+            facebook_photos.each do |f|
+              if f.mobile_html && !f.mobile_html.include?('The page you requested was not found')
+                query_cache[:facebook_photos] << f.id
+              end
+            end
+            sc.update(query_cache: query_cache)
+          end
+          facebook_photos = FBID.where(id: query_cache[:facebook_photos]).all
+          if facebook_photos
+            last_timestamps['facebook_photo'] = []
+            facebook_photos.each do |f|
+              posts << {sort_time: f.estimated_timestamp || 0, type: 'facebook_photo', content: f}
+              last_timestamps['facebook_photo'] << (f.estimated_timestamp || 0)
+            end
+          end
         end
 
         if filters["types"].nil? || (filters["types"] && filters["types"].include?("facebook_post"))
-          facebook_posts_authored = FBID.where(fbid_type: 'post', fb_account: facebook_accounts, fbid: facebook_authored_edges).all
+          if !query_cache[:facebook_posts_authored]
+            facebook_posts_authored = FBID.where(fbid_type: 'post', fb_account: facebook_accounts, fbid: facebook_authored_edges).all
+            query_cache[:facebook_posts_authored] = []
+            facebook_posts_authored.each do |f|
+              if f.mobile_html && !f.mobile_html.include?('The page you requested was not found') && FBIDEdge.where(from: f.fbid, relationship: 'HAS_CNAME_FROM').first.nil?
+                query_cache[:facebook_posts_authored] << f.id
+              end
+            end
+            sc.update(query_cache: query_cache)
+          end
+          facebook_posts_authored = FBID.where(id: query_cache[:facebook_posts_authored]).all
+          if facebook_posts_authored
+            last_timestamps['facebook_post'] = []
+            facebook_posts_authored.each do |f|
+              posts << {sort_time: f.estimated_timestamp || 0, type: 'facebook_post', content: f}
+              last_timestamps['facebook_post'] << (f.estimated_timestamp || 0)
+            end
+          end
         end
 
         if filters["types"].nil? || (filters["types"] && filters["types"].include?("facebook_album"))
-          facebook_albums_authored = FBID.where(fbid_type: 'album', fb_account: facebook_accounts, fbid: facebook_authored_edges).all
+          if !query_cache[:facebook_albums_authored]
+            facebook_albums_authored = FBID.where(fbid_type: 'album', fb_account: facebook_accounts, fbid: facebook_authored_edges).all
+            query_cache[:facebook_albums_authored] = []
+            facebook_albums_authored.each do |f|
+              if f.mobile_html && !f.mobile_html.include?('The page you requested was not found')
+                query_cache[:facebook_albums_authored] << f.id
+              end
+            end
+            sc.update(query_cache: query_cache)
+          end
+          facebook_albums_authored = FBID.where(id: query_cache[:facebook_albums_authored]).all
+          if facebook_albums_authored
+            last_timestamps['facebook_album'] = []
+            facebook_albums_authored.each do |f|
+              posts << {sort_time: f.estimated_timestamp || 0, type: 'facebook_album', content: f}
+              last_timestamps['facebook_album'] << (f.estimated_timestamp || 0)
+            end
+          end
         end
 
         if filters["types"].nil? || (filters["types"] && filters["types"].include?("pixiv_post"))
@@ -362,46 +434,6 @@ class ProfilesController < ApplicationController
           facebook_messages.each do |f|
             posts << {sort_time: f.timestamp / 1000, type: 'facebook_message', content: f}
             last_timestamps['facebook_message'] << (f.timestamp / 1000)
-          end
-        end
-
-        if facebook_photos_of
-          last_timestamps['facebook_photo_of'] = []
-          facebook_photos_of.each do |f|
-            if f.mobile_html && !f.mobile_html.include?('The page you requested was not found')
-              posts << {sort_time: f.estimated_timestamp || 0, type: 'facebook_photo_of', content: f}
-              last_timestamps['facebook_photo_of'] << (f.estimated_timestamp || 0)
-            end
-          end
-        end
-
-        if facebook_albums_authored
-          last_timestamps['facebook_album'] = []
-          facebook_albums_authored.each do |f|
-            if f.mobile_html && !f.mobile_html.include?('The page you requested was not found')
-              posts << {sort_time: f.estimated_timestamp || 0, type: 'facebook_album', content: f}
-              last_timestamps['facebook_album'] << (f.estimated_timestamp || 0)
-            end
-          end
-        end
-
-        if facebook_posts_authored
-          last_timestamps['facebook_post'] = []
-          facebook_posts_authored.each do |f|
-            if f.mobile_html && !f.mobile_html.include?('The page you requested was not found') && FBIDEdge.where(from: f.fbid, relationship: 'HAS_CNAME_FROM').first.nil?
-              posts << {sort_time: f.estimated_timestamp || 0, type: 'facebook_post', content: f}
-              last_timestamps['facebook_post'] << (f.estimated_timestamp || 0)
-            end
-          end
-        end
-
-        if facebook_photos
-          last_timestamps['facebook_photo'] = []
-          facebook_photos.each do |f|
-            if f.mobile_html && !f.mobile_html.include?('The page you requested was not found')
-              posts << {sort_time: f.estimated_timestamp || 0, type: 'facebook_photo', content: f}
-              last_timestamps['facebook_photo'] << (f.estimated_timestamp || 0)
-            end
           end
         end
 
