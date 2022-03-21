@@ -30,6 +30,13 @@ class ProfilesController < ApplicationController
         post[:content] = FBID.where(id: post[:id]).first
       elsif post[:id] && post[:type].start_with?('twitter')
         post[:content] = TwitterTweet.where(id: post[:id]).first
+      elsif post[:id] && post[:type].start_with?('tumblr')
+        post[:content] = TumblrPost.where(id: post[:id]).first
+        x = Nokogiri::HTML.parse(post[:content].xml_dump)
+        text = x.css('tumblr regular-body').text
+        post[:text] = text
+      elsif post[:id] && post[:type].start_with?('deviantart')
+        post[:content] = DeviantartPost.where(id: post[:id]).first
       end
     end
     render :layout => false
@@ -156,7 +163,11 @@ class ProfilesController < ApplicationController
         end
         
         if filters["types"].nil? || (filters["types"] && filters["types"].include?("deviantart_post"))
-          deviantart_posts = DeviantartPost.where(username: deviantart_accounts, parsed: true).all
+          last_timestamps['deviantart_post'] = []
+          DeviantartPost.where(username: deviantart_accounts, parsed: true).pluck(:id, :pubdate).each do |id, pubdate|
+            posts << {sort_time: pubdate.to_i, type: 'deviantart_post', id: id}
+            last_timestamps['deviantart_post'] << pubdate.to_i
+          end
         end
 
         if filters["types"].nil? || (filters["types"] && 
@@ -179,10 +190,10 @@ class ProfilesController < ApplicationController
             end
             last_timestamps['facebook_photo_of'] = []
             facebook_photos_of = []
-            FBID.where(id: query_cache[:facebook_photos_of]).find_each(batch_size: 100) do |f|
-              posts << {sort_time: f.estimated_timestamp || 0, type: 'facebook_photo_of', id: f.id}
-              facebook_photos_of << f.fbid
-              last_timestamps['facebook_photo_of'] << (f.estimated_timestamp || 0)
+            FBID.where(id: query_cache[:facebook_photos_of]).pluck(:id, :estimated_timestamp, :fbid).each do |id, estimated_timestamp, fbid|
+              posts << {sort_time: estimated_timestamp || 0, type: 'facebook_photo_of', id: id}
+              facebook_photos_of << fbid
+              last_timestamps['facebook_photo_of'] << (estimated_timestamp || 0)
             end
           end
 
@@ -197,9 +208,9 @@ class ProfilesController < ApplicationController
               sc.update(query_cache: query_cache)
             end
             last_timestamps['facebook_photo'] = []
-            FBID.where(id: query_cache[:facebook_photos]).find_each(batch_size: 100) do |f|
-              posts << {sort_time: f.estimated_timestamp || 0, type: 'facebook_photo', id: f.id}
-              last_timestamps['facebook_photo'] << (f.estimated_timestamp || 0)
+            FBID.where(id: query_cache[:facebook_photos]).pluck(:id, :estimated_timestamp).each do |id, estimated_timestamp|
+              posts << {sort_time: estimated_timestamp || 0, type: 'facebook_photo', id: id}
+              last_timestamps['facebook_photo'] << (estimated_timestamp || 0)
             end
           end
         end
@@ -216,9 +227,9 @@ class ProfilesController < ApplicationController
               sc.update(query_cache: query_cache)
             end
             last_timestamps['facebook_post'] = []
-            FBID.where(id: query_cache[:facebook_posts_authored]).find_each(batch_size: 100) do |f|
-              posts << {sort_time: f.estimated_timestamp || 0, type: 'facebook_post', id: f.id}
-              last_timestamps['facebook_post'] << (f.estimated_timestamp || 0)
+            FBID.where(id: query_cache[:facebook_posts_authored]).pluck(:id, :estimated_timestamp).each do |id, estimated_timestamp|
+              posts << {sort_time: estimated_timestamp || 0, type: 'facebook_post', id: id}
+              last_timestamps['facebook_post'] << (estimated_timestamp || 0)
             end
           end
         end
@@ -235,9 +246,9 @@ class ProfilesController < ApplicationController
               sc.update(query_cache: query_cache)
             end
             last_timestamps['facebook_album'] = []
-            FBID.where(id: query_cache[:facebook_albums_authored]).find_each(batch_size: 100) do |f|
-              posts << {sort_time: f.estimated_timestamp || 0, type: 'facebook_album', id: f.id}
-              last_timestamps['facebook_album'] << (f.estimated_timestamp || 0)
+            FBID.where(id: query_cache[:facebook_albums_authored]).pluck(:id, :estimated_timestamp).each do |id, estimated_timestamp|
+              posts << {sort_time: estimated_timestamp || 0, type: 'facebook_album', id: id}
+              last_timestamps['facebook_album'] << (estimated_timestamp || 0)
             end
           end
         end
@@ -250,28 +261,34 @@ class ProfilesController < ApplicationController
           filters["types"].include?("tumblr_post-content--photo") || filters["types"].include?("tumblr_post-content--video") || filters["types"].include?("tumblr_post-content--audio") ||
           filters["types"].include?("tumblr_post-content--text") || filters["types"].include?("tumblr_post-content--answer") || filters["types"].include?("tumblr_post-content--iframe") ||
           filters["types"].include?("tumblr_post-content--chat") || filters["types"].include?("tumblr_post-content--link") || filters["types"].include?("tumblr_post-content--quote")))
-          tumblr_posts = TumblrPost.where(username: tumblr_accounts).all
+          TumblrPost.where(username: tumblr_accounts).pluck(:id, :timestamp, :post_type).each do |id, timestamp, post_type|
+            posts << {sort_time: timestamp.to_i, type: "tumblr_#{post_type}", id: id}
+            if last_timestamps["tumblr_#{post_type}"].nil?
+              last_timestamps["tumblr_#{post_type}"] = []
+            end
+            last_timestamps["tumblr_#{post_type}"] << (timestamp.to_i)
+          end
         end
 
         if filters["types"].nil? || (filters["types"] && (filters["types"].include?("twitter_tweet")) || filters["types"].include?("twitter_retweet"))
           twitter_ids = TwitterAccount.where(uid: uid).pluck(:user_id)
           twitter_posts = []
           if filters["types"].nil? || (filters["types"] && filters["types"].include?("twitter_retweet"))
-            TwitterTweet.where(user_id: twitter_ids, is_retweet: true).find_each do |t|
-              posts << {sort_time: t.time.to_i, type: t.is_retweet ? 'twitter_retweet' : 'twitter_tweet', id: t.id}
-              if last_timestamps[(t.is_retweet ? 'twitter_retweet' : 'twitter_tweet')].nil?
-                last_timestamps[(t.is_retweet ? 'twitter_retweet' : 'twitter_tweet')] = []
+            TwitterTweet.where(user_id: twitter_ids, is_retweet: true).pluck(:id, :time, :is_retweet).each do |id, time, is_retweet|
+              posts << {sort_time: time.to_i, type: is_retweet ? 'twitter_retweet' : 'twitter_tweet', id: id}
+              if last_timestamps[(is_retweet ? 'twitter_retweet' : 'twitter_tweet')].nil?
+                last_timestamps[(is_retweet ? 'twitter_retweet' : 'twitter_tweet')] = []
               end
-              last_timestamps[(t.is_retweet ? 'twitter_retweet' : 'twitter_tweet')] << t.time.to_i
+              last_timestamps[(is_retweet ? 'twitter_retweet' : 'twitter_tweet')] << time.to_i
             end
           end
           if filters["types"].nil? || (filters["types"] && filters["types"].include?("twitter_tweet"))
-            TwitterTweet.where(user_id: twitter_ids, is_retweet: false).find_each do |t|
-              posts << {sort_time: t.time.to_i, type: t.is_retweet ? 'twitter_retweet' : 'twitter_tweet', id: t.id}
-              if last_timestamps[(t.is_retweet ? 'twitter_retweet' : 'twitter_tweet')].nil?
-                last_timestamps[(t.is_retweet ? 'twitter_retweet' : 'twitter_tweet')] = []
+            TwitterTweet.where(user_id: twitter_ids, is_retweet: false).pluck(:id, :time, :is_retweet).each do |id, time, is_retweet|
+              posts << {sort_time: time.to_i, type: is_retweet ? 'twitter_retweet' : 'twitter_tweet', id: id}
+              if last_timestamps[(is_retweet ? 'twitter_retweet' : 'twitter_tweet')].nil?
+                last_timestamps[(is_retweet ? 'twitter_retweet' : 'twitter_tweet')] = []
               end
-              last_timestamps[(t.is_retweet ? 'twitter_retweet' : 'twitter_tweet')] << t.time.to_i
+              last_timestamps[(is_retweet ? 'twitter_retweet' : 'twitter_tweet')] << time.to_i
             end
           end
         end
@@ -422,18 +439,6 @@ class ProfilesController < ApplicationController
           end
         end
 
-        if tumblr_posts
-          tumblr_posts.each do |t|
-            x = Nokogiri::HTML.parse(t.xml_dump)
-            text = x.css('tumblr regular-body').text
-            posts << {sort_time: t.timestamp.to_i, type: "tumblr_#{t.post_type}", content: t, text: text}
-            if last_timestamps["tumblr_#{t.post_type}"].nil?
-              last_timestamps["tumblr_#{t.post_type}"] = []
-            end
-            last_timestamps["tumblr_#{t.post_type}"] << (t.timestamp.to_i)
-          end
-        end
-
         if facebook_messages
           last_timestamps['facebook_message'] = []
           facebook_messages.each do |f|
@@ -473,14 +478,6 @@ class ProfilesController < ApplicationController
           webcomics_strips.each do |w|
             posts << {sort_time: w.date.to_time.to_i, type: 'webcomics_strip', content: w}
             last_timestamps['webcomics_strip'] << w.date.to_time.to_i
-          end
-        end
-
-        if deviantart_posts
-          last_timestamps['deviantart_post'] = []
-          deviantart_posts.each do |d|
-            posts << {sort_time: d.pubdate.to_i, type: 'deviantart_post', content: d}
-            last_timestamps['deviantart_post'] << d.pubdate.to_i
           end
         end
 
@@ -607,6 +604,13 @@ class ProfilesController < ApplicationController
         post[:content] = FBID.where(id: post[:id]).first
       elsif post[:id] && post[:type].start_with?('twitter')
         post[:content] = TwitterTweet.where(id: post[:id]).first
+      elsif post[:id] && post[:type].start_with?('tumblr')
+        post[:content] = TumblrPost.where(id: post[:id]).first
+        x = Nokogiri::HTML.parse(post[:content].xml_dump)
+        text = x.css('tumblr regular-body').text
+        post[:text] = text
+      elsif post[:id] && post[:type].start_with?('deviantart')
+        post[:content] = DeviantartPost.where(id: post[:id]).first
       end
     end
 
