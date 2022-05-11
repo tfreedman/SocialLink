@@ -36,7 +36,7 @@ body.index {
         padding: 10px 0;
   
         .profile {
-          .fa-user-circle {font-size: 93px}
+          .fa-circle-user {font-size: 93px}
           .photo {width: 100px; height: 100px; border: 5px solid white; box-shadow: 0px 0px 0px 3px white}
           .recently-updated {box-shadow: 0px 0px 0px 3px red}
           .info {
@@ -70,7 +70,7 @@ body.index {
     }
   }
   
-  .fa-user-circle {
+  .fa-circle-user {
     font-size: 192px;
     line-height: 0.985em;
   }
@@ -95,7 +95,7 @@ body.index {
   h1 {display: inline-block; vertical-align: middle}
 }
   
-section > a > i.fa-angle-left {font-size: 40px}
+section > a > svg.fa-angle-left {font-size: 40px}
   
 #main {
   max-width: 1000px;
@@ -165,7 +165,7 @@ section > a > i.fa-angle-left {font-size: 40px}
       justify-content: center;
       padding: 100px 0;
 
-      & > i.fa-spinner {
+      & > svg.fa-spinner {
         font-size: 200px;
         margin: 0 auto;
       }
