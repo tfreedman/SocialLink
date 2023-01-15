@@ -8,9 +8,11 @@
 </h2>
 
 <% if post[:content][:filename] %>
-  <a data-fancybox="webcomics_strip_<%= post[:content][:filename] %>" href="/media/<%= person[:name] %>/Webcomic/<%= post[:content][:comic] %>/<%= post[:content][:filename] %>">
-    <img src="/media/<%= person[:name] %>/Webcomic/<%= post[:content][:comic] %>/<%= post[:content][:filename] %>" />
+  <% post[:content][:filename].each do |file| %>
+  <a data-fancybox="webcomics_strip_<%= file %>" href="/media/<%= person[:name] %>/Webcomic/<%= post[:content][:comic] %>/<%= file %>">
+    <img src="/media/<%= person[:name] %>/Webcomic/<%= post[:content][:comic] %>/<%= file %>" />
   </a>
+  <% end %>
 <% end %>
 
 <% if json && json["alt"] %>
