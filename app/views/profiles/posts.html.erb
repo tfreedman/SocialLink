@@ -32,6 +32,8 @@
         <a href="<%= post[:content][:link_permalink] %><%= post[:content][:reddit_id] %>"><i class="fab fa-reddit"></i></a>
       <% elsif ["twitter_tweet", "twitter_retweet"].include?(post[:type]) %>
         <a href="https://twitter.com/i/status/<%= post[:content][:tweet_id] %>"><i class="fab fa-twitter"></i></a>
+      <% elsif ["mastodon_toot", "mastodon_retoot"].include?(post[:type]) %>
+        <a href="<%= post[:content][:url] %>"><i class="fab fa-mastodon"></i></a>
       <% elsif ["instagram_post", "instagram_story"].include?(post[:type]) %>
         <% if post[:type] == "instagram_post" %>
           <a href="https://www.instagram.com/p/<%= post[:content][:shortcode] %>/">
@@ -135,6 +137,8 @@
         <% end %>
       <% elsif ["twitter_tweet", "twitter_retweet"].include?(post[:type]) %>
         <%= render :partial => 'posts/twitter_tweet' , locals: {post: post, person: @person} %>
+      <% elsif ["mastodon_toot", "mastodon_retoot"].include?(post[:type]) %>
+        <%= render :partial => 'posts/mastodon_toot' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "reddit_comment" %>
         <h2><a href="<%= post[:content][:link_permalink] %><%= post[:content][:reddit_id] %>"><%= post[:content][:link_title] %> (<%= post[:content][:subreddit_name_prefixed] %>)</a></h2>
         <%= post[:content][:author] %>: <%= raw(post[:content][:body]) %>

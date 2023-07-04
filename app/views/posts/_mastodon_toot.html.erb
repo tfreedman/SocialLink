@@ -1,0 +1,29 @@
+<% if post[:content][:reblog].nil? %>
+  <%= post[:content][:content].html_safe %>
+  <% if post[:content][:media_attachments] %>
+    <% post[:content][:media_attachments].each do |a| %>
+      <% if a["type"] == 'image' %>
+        <img src="<%= a['url'] %>" />
+      <% elsif a["type"] == 'video' || a["type"] == 'gifv' %>
+        <video controls>
+          <source src="<%= a['url'] %>">
+        </video>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <% r = post[:content][:reblog] %>
+  <h2>RT @<%= r['account']['acct'] %></h2>
+  <%= r['content'].html_safe %>
+  <% if r['media_attachments'] %>
+    <% r['media_attachments'].each do |a| %>
+      <% if a["type"] == 'image' %>
+        <img src="<%= a['url'] %>" />
+      <% elsif a["type"] == 'video' || a["type"] == 'gifv' %>
+        <video controls>
+          <source src="<%= a['url'] %>">
+        </video>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

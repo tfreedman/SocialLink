@@ -4,7 +4,7 @@ class ApplicationController < ActionController::Base
   before_action :service_name_path_cache_update
 
   SUPPORTED_TYPES = ["facebook_message", "facebook_post", "facebook_photo", "facebook_photo_of",
-  "facebook_album", "hangouts_event", "instagram_post", "instagram_story",
+  "facebook_album", "hangouts_event", "instagram_post", "instagram_story", "mastodon_toot", "mastodon_retoot",
   "tumblr_post-content--photo", "tumblr_post-content--video", "tumblr_post-content--audio",
   "tumblr_post-content--text", "tumblr_post-content--answer", "tumblr_post-content--iframe",
   "tumblr_post-content--chat", "tumblr_post-content--link", "tumblr_post-content--quote",
@@ -126,9 +126,6 @@ class ApplicationController < ActionController::Base
 
         # This avoids the need for a complete rescan when one of many services updates. This way, if we know that X just updated, we
         # can rescan X but ignore Y, as we know those values haven't changed.
-
-        $debug = @person[:last_timestamps]
-
         activity_cache = tc.activity_cache || {}
         @person[:last_timestamps].each do |key, value|
           if @person[:last_timestamps][key].count > 0 && key

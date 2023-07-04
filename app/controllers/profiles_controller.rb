@@ -70,6 +70,7 @@ class ProfilesController < ApplicationController
         twitter_accounts = []
         phone_numbers = []
         matrix_accounts = []
+        mastodon_accounts = []
         webcomics = []
         accounts = []
 
@@ -90,6 +91,9 @@ class ProfilesController < ApplicationController
             elsif profile.value.include?("deviantart.com/")
               accounts << {service: 'deviantart', url: profile.value}
               deviantart_accounts << profile.value.split('deviantart.com/')[1].split('/')[0].downcase
+            elsif profile.value.count('@') == 2
+              accounts << {service: 'mastodon', url: 'https://' + profile.value.split('@')[2] + '/@' + profile.value.split('@')[1]}
+              mastodon_accounts << MastodonAccount.where(username: profile.value).first.user_id
             elsif profile.value.include?("pixiv.net/")
               accounts << {service: 'pixiv', url: profile.value}
               if profile.value.include?("pixiv.net/member")
@@ -154,6 +158,14 @@ class ProfilesController < ApplicationController
           reddit_comments = RedditComment.where(author: reddit_accounts).order('created_utc DESC').all
         end
         
+        if filters["types"].nil? || (filters["types"] && filters["types"].include?("mastodon_toot"))
+          mastodon_toots = MastodonToot.where(user_id: mastodon_accounts).where(reblog: nil).order('created_at DESC').all
+        end
+
+        if filters["types"].nil? || (filters["types"] && filters["types"].include?("mastodon_retoot"))
+          mastodon_retoots = MastodonToot.where(user_id: mastodon_accounts).where.not(reblog: nil).order('created_at DESC').all
+        end
+
         if filters["types"].nil? || (filters["types"] && filters["types"].include?("instagram_post"))
           instagram_posts = InstagramPost.where(instagram_user_id: instagram_accounts).order('timestamp DESC').all
         end
@@ -394,6 +406,22 @@ class ProfilesController < ApplicationController
             mamirc_events.each do |m|
               posts << {sort_time: m.timestamp / 1000, type: 'mamirc_event', content: m}
               last_timestamps['mamirc_event'] << m.timestamp / 1000
+            end
+          end
+
+          if mastodon_toots
+            last_timestamps['mastodon_toot'] = []
+            mastodon_toots.each do |m|
+              posts << {sort_time: m.created_at.to_i, type: 'mastodon_toot', content: m}
+              last_timestamps['mastodon_toot'] << m.created_at.to_i
+            end
+          end
+
+          if mastodon_retoots
+            last_timestamps['mastodon_retoot'] = []
+            mastodon_retoots.each do |m|
+              posts << {sort_time: m.created_at.to_i, type: 'mastodon_retoot', content: m}
+              last_timestamps['mastodon_retoot'] << m.created_at.to_i
             end
           end
 

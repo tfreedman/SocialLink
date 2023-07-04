@@ -73,6 +73,8 @@
                   <a href="<%= account[:url] %>"><%= render :partial => 'profiles/pixiv' %></a>
                 <% elsif account[:service] == "hangouts" %>
                   <%= render :partial => 'profiles/hangouts' %>
+                <% elsif account[:service] == "mastodon" %>
+                  <a href="<%= account[:url] %>"><i class="fab fa-mastodon"></i></a>
                 <% elsif account[:service] == "sms" %>
                   <i class="fas fa-sms"></i>
                 <% end %>
@@ -146,6 +148,26 @@
               <% if @timeline[:service_counts]['instagram_story'] %>
                 <li data-service="instagram_story">
                   <input autocomplete="off" type="checkbox" <%= @filters.include?('instagram_story') ? 'checked' : '' %> id="instagram_story" /> <label for="instagram_story">Stories (<%= @timeline[:service_counts]['instagram_story'] || 0 %>)</label>
+                </li>
+              <% end %>
+              <br />
+            </ul>
+          </li>
+        <% end %>
+
+        <% if (@timeline[:service_counts]['mastodon_toot'].to_i + @timeline[:service_counts]['mastodon_retoot'].to_i) > 0 %>
+          <li>
+            <strong>Mastodon:</strong>
+            <ul>
+              <% if @timeline[:service_counts]['mastodon_toot'] %>
+                <li data-service="mastodon_toot">
+                  <input autocomplete="off" type="checkbox" <%= @filters.include?('mastodon_toot') ? 'checked' : '' %> id="mastodon_toot" /> <label for="mastodon_toot">Toots (<%= @timeline[:service_counts]['mastodon_toot'] || 0 %>)</label>
+                </li>
+              <% end %>
+
+              <% if @timeline[:service_counts]['mastodon_retoot'] %>
+                <li data-service="mastodon_retoot">
+                  <input autocomplete="off" type="checkbox" <%= @filters.include?('mastodon_retoot') ? 'checked' : '' %> id="mastodon_retoot" /> <label for="mastodon_retoot">Retoots (<%= @timeline[:service_counts]['mastodon_retoot'] || 0 %>)</label>
                 </li>
               <% end %>
               <br />
