@@ -10,10 +10,15 @@
 </h2>
 <%
   json = JSON.parse(post[:content][:item])
-  if json['snippet']['thumbnails']['maxres']
-    url = json['snippet']['thumbnails']['maxres']['url']
-  elsif json['snippet']['thumbnails']['high']
-    url = json['snippet']['thumbnails']['high']['url']
+  if json["kind"] == "youtube#playlistItem"
+    item = json['snippet']
+  elsif json['kind'] == 'youtube#videoListResponse'
+    item = json['items'][0]['snippet']
+  end
+  if item['thumbnails']['maxres']
+    url = item['thumbnails']['maxres']['url']
+  elsif item['thumbnails']['high']
+    url = item['thumbnails']['high']['url']
   end
 %>
 <a data-fancybox href="https://www.youtube.com/watch?v=<%= post[:content][:video_id] %>"><img src="<%= url %>" /></a>
