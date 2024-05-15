@@ -29,11 +29,30 @@
 
 <% if post[:content][:is_retweet] && post[:content].original %>
   <% photos = post[:content].original[:entries][:photos] %>
+  <% videos = post[:content].original[:entries][:videos] %>
 <% else %>
   <% photos = post[:content][:entries][:photos] %>
+  <% videos = post[:content][:entries][:videos] %>
 <% end %>
 <% photos.each do |photo| %>
-  <a href="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" data-fancybox="twitter_<%= post[:content][:tweet_id] %>">
-    <img src="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" />
+  <% if photo.class == Hash %>
+    <% if photo['URL'].class == String %>
+      <a href="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= photo['URL'].split('/')[-1].split('.')[0] %>-orig.<%= photo['URL'].split('/')[-1].split('.')[1] %>" data-fancybox="twitter_<%= post[:content][:tweet_id] %>">
+        <img src="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= photo['URL'].split('/')[-1].split('.')[0] %>-orig.<%= photo['URL'].split('/')[-1].split('.')[1] %>" />
+      </a>   
+    <% end %>
+  <% else %>
+    <a href="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" data-fancybox="twitter_<%= post[:content][:tweet_id] %>">
+      <img src="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" />
+    </a>
+  <% end %>
+<% end %>
+<% videos.each do |v| %>
+  <% video = v["URL"] %>
+  <% next if video.nil? %>
+  <a href="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= video.split('/')[-1].split('.')[0] %>.<%= video.split('/')[-1].split('.')[1].split('?')[0] %>" data-fancybox="twitter_<%= post[:content][:tweet_id] %>">
+    <video controls>
+      <source src="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= video.split('/')[-1].split('.')[0] %>.<%= video.split('/')[-1].split('.')[1].split('?')[0] %>">
+    </video>
   </a>
 <% end %>
