@@ -45,7 +45,7 @@
     <% index = 0 %>
     <% FBID.where(fbid: photos_in_album).find_each do |fbid_obj| %>
       <a data-fancybox="facebook_album_<%= post[:content][:fbid] %>" href="/media/<%= person[:name] %>/Facebook/<%= post[:content][:fb_account] %>/<%= fbid_obj.fbid %>.jpg" data-caption="<%= fbid_obj.payload[:caption] %>">
-        <img src="/media/<%= person[:name] %>/Facebook/<%= post[:content][:fb_account] %>/<%= fbid_obj.fbid %>.jpg" <% if index > 0 %>style="display: none"<% end %>/>
+        <img src="/media/<%= person[:name] %>/Facebook/<%= post[:content][:fb_account] %>/<%= fbid_obj.fbid %>.jpg" <% if index > 0 %>loading="lazy" style="display: none"<% end %>/>
         <% index += 1 %>
       </a>
     <% end %>

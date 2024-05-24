@@ -36,7 +36,7 @@
     <% if media_url %>
       <a data-fancybox="instagram_<%= post[:content][:shortcode] %>" href="/media/<%= @person[:name] %>/Instagram/<%= folder %>/<%= media_name %>">
         <% if media_type == 'image' %>
-          <img src="/media/<%= @person[:name] %>/Instagram/<%= folder %>/<%= media_name %>" <% if node > 0 %>style="display: none"<% end %> />
+          <img src="/media/<%= @person[:name] %>/Instagram/<%= folder %>/<%= media_name %>" <% if node > 0 %>loading="lazy" style="display: none"<% end %> />
         <% elsif media_type == 'video' %>
           <video controls preload="metadata" <% if node > 0 %>style="display: none"<% end %>>
             <source src="/media/<%= @person[:name] %>/Instagram/<%= folder %>/<%= media_name %>"/>
