@@ -21,10 +21,10 @@
               <% bgcolor = RGB::Color.from_rgb_hex('#FF0000') %>
             <% end %>
             <style>
-              <% bgcolor.l = 0.5 if bgcolor.l > 0.5 %>
+              <% bgcolor.lightness = 0.5 if bgcolor.lightness > 0.5 %>
               a, i.fa-spinner {color: <%= bgcolor.to_rgb_hex %> !important; fill: <%= bgcolor.to_rgb_hex %> !important;}
             </style>
-            <% bgcolor.l = 0.9 %>
+            <% bgcolor.lightness = 0.9 %>
             <style>body {background: linear-gradient(to right, <%= bgcolor.to_rgb_hex %> 0%, <%= bgcolor.to_rgb_hex %> 270px, #fafafa 270px, #fafafa 100%) repeat-y scroll 0 0 rgba(0, 0, 0, 0)}</style>
           <% else %>
             <style>
