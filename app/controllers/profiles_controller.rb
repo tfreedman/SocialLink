@@ -71,6 +71,7 @@ class ProfilesController < ApplicationController
         phone_numbers = []
         matrix_accounts = []
         mastodon_accounts = []
+        ao3_accounts = []
         webcomics = []
         accounts = []
 
@@ -94,6 +95,9 @@ class ProfilesController < ApplicationController
             elsif profile.value.count('@') == 2
               accounts << {service: 'mastodon', url: 'https://' + profile.value.split('@')[2] + '/@' + profile.value.split('@')[1]}
               mastodon_accounts << MastodonAccount.where(username: profile.value).first.user_id
+            elsif profile.value.include?("archiveofourown.org/users/")
+              accounts << {service: 'ao3', url: profile.value}
+              ao3_accounts << profile.value.split('/users/')[1].split('/')[0]
             elsif profile.value.include?("pixiv.net/")
               accounts << {service: 'pixiv', url: profile.value}
               if profile.value.include?("pixiv.net/member")
@@ -164,6 +168,10 @@ class ProfilesController < ApplicationController
 
         if filters["types"].nil? || (filters["types"] && filters["types"].include?("mastodon_retoot"))
           mastodon_retoots = MastodonToot.where(user_id: mastodon_accounts).where.not(reblog: nil).order('created_at DESC').all
+        end
+
+        if filters["types"].nil? || (filters["types"] && filters["types"].include?("ao3_work"))
+          ao3_works = AO3Work.where(username: ao3_accounts).order('last_updated DESC').all
         end
 
         if filters["types"].nil? || (filters["types"] && filters["types"].include?("instagram_post"))
@@ -456,6 +464,14 @@ class ProfilesController < ApplicationController
               posts << {sort_time: (h.timestamp / 1000000).to_i, type: 'hangouts_event', content: h}
               last_timestamps['hangouts_event'] << (h.timestamp / 1000000).to_i
             end
+          end
+        end
+
+        if ao3_works
+          last_timestamps['ao3_work'] = []
+          ao3_works.each do |a|
+            posts << {sort_time: a.last_updated.to_time.to_i, type: 'ao3_work', content: a}
+            last_timestamps['ao3_work'] << a.last_updated.to_time.to_i
           end
         end
 

@@ -55,6 +55,8 @@
                   <% end %>
                 <% elsif account[:service] == "matrix" %>
                   <%= render :partial => 'posts/element' %>
+                <% elsif account[:service] == "ao3" %>
+                  <a href="<%= account[:url] %>"><%= render :partial => 'profiles/ao3' %></a>
                 <% elsif account[:service] == "deviantart" %>
                   <a href="<%= account[:url] %>"><i class="fab fa-deviantart"></i></a>
                 <% elsif account[:service] == "facebook" %>
@@ -278,13 +280,18 @@
           </li>        
         <% end %>
 
-        <% if (@timeline[:service_counts]['pixiv_post'].to_i + @timeline[:service_counts]['matrix_event'].to_i + @timeline[:service_counts]['android_sms'].to_i + 
+        <% if (@timeline[:service_counts]['pixiv_post'].to_i + @timeline[:service_counts]['matrix_event'].to_i + @timeline[:service_counts]['android_sms'].to_i + @timeline[:service_counts]['ao3_work'].to_i +
           @timeline[:service_counts]['windows_phone_sms'].to_i + @timeline[:service_counts]['mamirc_event'].to_i + @timeline[:service_counts]['colloquy_message'].to_i + 
-          @timeline[:service_counts]['pidgin_message'].to_i + @timeline[:service_counts]['deviantart_post'].to_i + @timeline[:service_counts]['youtube_video'].to_i) > 0 
-          @timeline[:service_counts]['hangouts_event'].to_i %>
+          @timeline[:service_counts]['pidgin_message'].to_i + @timeline[:service_counts]['deviantart_post'].to_i + @timeline[:service_counts]['youtube_video'].to_i) + @timeline[:service_counts]['hangouts_event'].to_i > 0 %>
           <li>
             <strong>Other:</strong>
             <ul>
+              <% if @timeline[:service_counts]['ao3_work'] %>
+                <li data-service="ao3_work">
+                  <input autocomplete="off" type="checkbox" <%= @filters.include?('ao3_work') ? 'checked' : '' %> id="ao3_work" /> <label for="ao3_work">AO3 Works (<%= @timeline[:service_counts]['ao3_work'] || 0 %>)</label>
+                </li>
+              <% end %>
+
               <% if @timeline[:service_counts]['hangouts_event'] %>
                 <li data-service="hangouts_event">
                   <input autocomplete="off" type="checkbox" <%= @filters.include?('hangouts_event') ? 'checked' : '' %> id="hangouts_event" /> <label for="hangouts_event">Hangouts (<%= @timeline[:service_counts]['hangouts_event'] || 0 %>)</label>

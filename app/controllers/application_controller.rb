@@ -3,14 +3,15 @@ class ApplicationController < ActionController::Base
   before_action :check_session_keys, except: [:update, :auth]
   before_action :service_name_path_cache_update
 
-  SUPPORTED_TYPES = ["facebook_message", "facebook_post", "facebook_photo", "facebook_photo_of",
+  SUPPORTED_TYPES = ["android_sms", "ao3_work", "colloquy_message", "deviantart_post",
+  "facebook_message", "facebook_post", "facebook_photo", "facebook_photo_of",
   "facebook_album", "hangouts_event", "instagram_post", "instagram_story", "mastodon_toot", "mastodon_retoot",
   "tumblr_post-content--photo", "tumblr_post-content--video", "tumblr_post-content--audio",
   "tumblr_post-content--text", "tumblr_post-content--answer", "tumblr_post-content--iframe",
   "tumblr_post-content--chat", "tumblr_post-content--link", "tumblr_post-content--quote",
-  "pixiv_post", "matrix_event", "android_sms", "windows_phone_sms", "reddit_comment",
-  "mamirc_event", "colloquy_message", "pidgin_message", "twitter_tweet", "twitter_retweet",
-  "deviantart_post", "webcomics_strip", "youtube_video"]
+  "pixiv_post", "matrix_event", "windows_phone_sms", "reddit_comment",
+  "mamirc_event", "pidgin_message", "twitter_tweet", "twitter_retweet",
+  "webcomics_strip", "youtube_video"]
 
 
   def auth

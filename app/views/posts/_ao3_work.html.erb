@@ -1,0 +1,14 @@
+<div>
+  <h2>
+    <a href="https://archiveofourown.org/works/<%= post[:content][:work_id] %>"><%= post[:content][:title] %></a>
+  </h2>
+  <em><%= raw post[:content][:summary] %></em>
+  <% last_revision = post[:content][:revisions].keys.sort[-1] %>
+
+  <div id="ao3-<%= post[:content][:work_id] %>" style="display: none" data-fancybox>
+    <%= raw post[:content][:revisions][last_revision] %>
+  </div>
+  <a data-fancybox data-src="#ao3-<%= post[:content][:work_id] %>">
+    <i class="fas fa-book"></i>
+  </a>
+</div>

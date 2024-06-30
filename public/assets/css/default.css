@@ -85,6 +85,7 @@ body.index {
       svg {
         &.hangouts {width: 35px; height: 35px; position: relative; top: 8px}
         &.element {position: relative; top: 4px; width: 24px; height: 29px}
+        &.ao3 {width: 30px; position: relative; top: 5px; height: 30px}
         width: 30px;
         height: 30px;
       }
@@ -200,8 +201,7 @@ section > a > svg.fa-angle-left {font-size: 40px}
           }
           .pixiv, .element, .colloquy, .mamirc, .pidgin {width: 24px; margin-left: 5px}
           .fa-deviantart {margin-left: 10px}
-
-          
+          .ao3 {width: 24px}
         }
         img, iframe, video {max-width: 100%; min-width: 100%}
 
