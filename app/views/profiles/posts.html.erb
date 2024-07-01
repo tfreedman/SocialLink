@@ -50,7 +50,7 @@
           <i class="far fa-clock"></i>
         <% end %>
       <% elsif post[:type] == "matrix_event" %>
-        <%= render :partial => 'posts/element' %>
+        <%= render :partial => 'profiles/element' %>
       <% elsif post[:type] == "deviantart_post" %>
         <a href="https://www.deviantart.com/<%= post[:content][:username] %>/art/<%= post[:content][:post_id] %>"><i class="fab fa-deviantart"></i></a>
       <% elsif post[:type] == "pixiv_post" %>
@@ -103,11 +103,11 @@
           <% end %>
         </a>
       <% elsif post[:type] == "colloquy_message" %>
-        <%= render :partial => 'posts/colloquy' %>
+        <%= render :partial => 'profiles/colloquy' %>
       <% elsif post[:type] == "mamirc_event" %>
-        <%= render :partial => 'posts/mamirc' %>
+        <%= render :partial => 'profiles/mamirc' %>
       <% elsif post[:type] == "pidgin_message" %>
-        <%= render :partial => 'posts/pidgin' %>
+        <%= render :partial => 'profiles/pidgin' %>
       <% elsif post[:type] == "adium_message" %>
         Adium
       <% end %>

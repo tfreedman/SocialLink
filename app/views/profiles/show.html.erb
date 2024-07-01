@@ -54,7 +54,7 @@
                     <a href="<%= 'https://' + account[:url] %>"><i class="fas fa-book-reader"></i></a>
                   <% end %>
                 <% elsif account[:service] == "matrix" %>
-                  <%= render :partial => 'posts/element' %>
+                  <%= render :partial => 'profiles/element' %>
                 <% elsif account[:service] == "ao3" %>
                   <a href="<%= account[:url] %>"><%= render :partial => 'profiles/ao3' %></a>
                 <% elsif account[:service] == "deviantart" %>
