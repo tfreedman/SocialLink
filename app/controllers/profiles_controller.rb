@@ -274,7 +274,7 @@ class ProfilesController < ApplicationController
         end
 
         if filters["types"].nil? || (filters["types"] && filters["types"].include?("pixiv_post"))
-          pixiv_posts = PixivPost.where(pixiv_member_id: pixiv_accounts).all
+          pixiv_posts = PixivPost.where(pixiv_member_id: pixiv_accounts, parsed: true).all
         end
 
         if filters["types"].nil? || (filters["types"] && (
