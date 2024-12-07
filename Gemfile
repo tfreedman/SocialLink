@@ -44,7 +44,7 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 gem 'pg'
 gem 'vcardigan'
-gem 'mini_magick'
+gem 'mini_magick', "= 4.13.2"
 gem 'rgb'
 
 # For importing Adium / Pidgin logs...
