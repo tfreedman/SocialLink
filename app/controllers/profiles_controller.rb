@@ -176,7 +176,7 @@ class ProfilesController < ApplicationController
 
         if filters["types"].nil? || (filters["types"] && filters["types"].include?("bluesky_post"))
           bluesky_ids = BlueskyAccount.where(uid: uid).pluck(:did)
-          bluesky_posts = BlueskyPost.where(user_did: bluesky_ids).order('posted_at DESC').all
+          bluesky_posts = BlueskyPost.where(user_did: bluesky_ids).all
         end
 
         if filters["types"].nil? || (filters["types"] && filters["types"].include?("ao3_work"))
@@ -479,8 +479,8 @@ class ProfilesController < ApplicationController
         if bluesky_posts
           last_timestamps['bluesky_post'] = []
           bluesky_posts.each do |b|
-            posts << {sort_time: b.posted_at.to_time.to_i, type: 'bluesky_post', content: b}
-            last_timestamps['bluesky_post'] << b.posted_at.to_time.to_i
+            posts << {sort_time: b.indexedAt.to_time.to_i, type: 'bluesky_post', content: b}
+            last_timestamps['bluesky_post'] << b.indexedAt.to_time.to_i
           end
         end
 

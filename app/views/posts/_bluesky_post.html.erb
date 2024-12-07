@@ -1,1 +1,12 @@
-<h2>Bluesky!</h2>
+<% if post[:content][:record]["$type"] == 'app.bsky.feed.post' %>
+  <%= post[:content][:record]["text"] %>
+<% if post[:content][:record]["embed"] %>
+  <% if post[:content][:record]["embed"]["$type"] == "app.bsky.embed.recordWithMedia" %>
+    <% post[:content][:record]["embed"]["media"]["images"].each do |image| %>
+      <img src="https://cdn.bsky.app/img/feed_fullsize/plain/<%= post[:content][:author]['did'] %>/<%= image['image']['ref']['$link'] %>/@jpeg" alt="<%= image['alt'] %>" />
+    <% end %>
+  <% end %>
+<% end %>
+<% else %>
+  Unknown Type: <%= post[:content][:record]["$type"] %>
+<% end %>

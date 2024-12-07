@@ -159,6 +159,20 @@
           </li>
         <% end %>
 
+        <% if (@timeline[:service_counts]['bluesky_post'].to_i + @timeline[:service_counts]['bluesky_post'].to_i) > 0 %>
+          <li>
+            <strong>Bluesky:</strong>
+            <ul>
+              <% if @timeline[:service_counts]['bluesky_post'] %>
+                <li data-service="bluesky_post">
+                  <input autocomplete="off" type="checkbox" <%= @filters.include?('bluesky_post') ? 'checked' : '' %> id="bluesky_post" /> <label for="bluesky_post">Posts (<%= @timeline[:service_counts]['bluesky_post'] || 0 %>)</label>
+                </li>
+              <% end %>
+              <br />
+            </ul>
+          </li>
+        <% end %>
+
         <% if (@timeline[:service_counts]['mastodon_toot'].to_i + @timeline[:service_counts]['mastodon_retoot'].to_i) > 0 %>
           <li>
             <strong>Mastodon:</strong>
