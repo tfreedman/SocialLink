@@ -60,6 +60,7 @@ class ProfilesController < ApplicationController
         sc = SocialLinkContact.where(uid: vcard.uid.first.values[0]).first
         query_cache = sc.query_cache || {}
 
+        bluesky_accounts = []
         youtube_accounts = []
         reddit_accounts = []
         instagram_accounts = []
@@ -80,6 +81,9 @@ class ProfilesController < ApplicationController
             if profile.value.include?("youtube.com")
               accounts << {service: 'youtube', url: profile.value}
               youtube_accounts << profile.value.split('youtube.com/channel/')[1]
+            elsif profile.value.include?("bsky.app/profile/")
+              accounts << {service: 'bluesky', url: profile.value}
+              bluesky_accounts << profile.value.split('bsky.app/profile/')[1]
             elsif profile.value.include?("wc://")
               accounts << {service: 'webcomic', url: profile.value.split('://')[1].split('#')[0]}
               webcomics << profile.value.split('#')[1]
@@ -168,6 +172,11 @@ class ProfilesController < ApplicationController
 
         if filters["types"].nil? || (filters["types"] && filters["types"].include?("mastodon_retoot"))
           mastodon_retoots = MastodonToot.where(user_id: mastodon_accounts).where.not(reblog: nil).order('created_at DESC').all
+        end
+
+        if filters["types"].nil? || (filters["types"] && filters["types"].include?("bluesky_post"))
+          bluesky_ids = BlueskyAccount.where(uid: uid).pluck(:did)
+          bluesky_posts = BlueskyPost.where(user_did: bluesky_ids).order('posted_at DESC').all
         end
 
         if filters["types"].nil? || (filters["types"] && filters["types"].include?("ao3_work"))
@@ -464,6 +473,14 @@ class ProfilesController < ApplicationController
               posts << {sort_time: (h.timestamp / 1000000).to_i, type: 'hangouts_event', content: h}
               last_timestamps['hangouts_event'] << (h.timestamp / 1000000).to_i
             end
+          end
+        end
+
+        if bluesky_posts
+          last_timestamps['bluesky_post'] = []
+          bluesky_posts.each do |b|
+            posts << {sort_time: b.posted_at.to_time.to_i, type: 'bluesky_post', content: b}
+            last_timestamps['bluesky_post'] << b.posted_at.to_time.to_i
           end
         end
 

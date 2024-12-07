@@ -57,6 +57,8 @@
                   <%= render :partial => 'profiles/element' %>
                 <% elsif account[:service] == "ao3" %>
                   <a href="<%= account[:url] %>"><%= render :partial => 'profiles/ao3' %></a>
+                <% elsif account[:service] == "bluesky" %>
+                  <a href="<%= account[:url] %>"><i class="fab fa-bluesky"></i></a>
                 <% elsif account[:service] == "deviantart" %>
                   <a href="<%= account[:url] %>"><i class="fab fa-deviantart"></i></a>
                 <% elsif account[:service] == "facebook" %>

@@ -26,6 +26,8 @@
         <a href="https://archiveofourown.org/works/<%= post[:content][:work_id] %>">
           <%= render :partial => 'profiles/ao3' %>
         </a>
+      <% elsif post[:type] == "bluesky_post" %>
+        <i class="fab fa-bluesky"></i>
       <% elsif post[:type] == "webcomics_strip" %>
         <i class="fas fa-book-reader"></i>
       <% elsif post[:type] == "hangouts_event" %>
