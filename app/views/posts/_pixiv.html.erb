@@ -15,6 +15,6 @@
 </div>
 <% post[:content][:filenames].each_with_index do |file, index| %>
   <a data-fancybox="pixiv_<%= post[:content][:post_id] %>" href='<%= "/media/#{snpc.name}/#{snpc.service}/#{snpc.username}/#{post_base}#{file}" %>'>
-    <img<% if index > 0 %> loading="lazy" style="display: none"<% end %> src='<%= "/media/#{snpc.name}/#{snpc.service}/#{snpc.username}/#{post_base}#{file}" %>'/>
+    <img loading="lazy" <% if index > 0 %>style="display: none"<% end %> src='<%= "/media/#{snpc.name}/#{snpc.service}/#{snpc.username}/#{post_base}#{file}" %>'/>
   </a>
 <% end %>
