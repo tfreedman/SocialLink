@@ -6,4 +6,6 @@ class BlueskyPost < ActiveRecord::Base
   serialize :author
   serialize :record
   serialize :embed
+
+  serialize :filenames
 end

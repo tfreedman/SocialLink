@@ -27,7 +27,7 @@
           <%= render :partial => 'profiles/ao3' %>
         </a>
       <% elsif post[:type] == "bluesky_post" %>
-        <i class="fab fa-bluesky"></i>
+        <a href="https://bsky.app/profile/<%= post[:content][:uri].split('at://')[1].split('/')[0] %>/post/<%= post[:content][:uri].split('/')[-1] %>"><i class="fab fa-bluesky"></i></a>
       <% elsif post[:type] == "webcomics_strip" %>
         <i class="fas fa-book-reader"></i>
       <% elsif post[:type] == "hangouts_event" %>
@@ -124,7 +124,7 @@
       <% elsif post[:type] == "ao3_work" %>
         <%= render :partial => 'posts/ao3_work' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "bluesky_post" %>
-        <%= render :partial => 'posts/bluesky_post' , locals: {post: post, person: @person} %>
+        <%= render :partial => 'posts/bluesky_post' , locals: {post: post, person: @person, record: nil} %>
       <% elsif post[:type] == "matrix_event" %>
         <%= render :partial => 'posts/matrix_event' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "pidgin_message" %>

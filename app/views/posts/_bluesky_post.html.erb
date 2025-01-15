@@ -1,12 +1,74 @@
-<% if post[:content][:record]["$type"] == 'app.bsky.feed.post' %>
-  <%= post[:content][:record]["text"] %>
-<% if post[:content][:record]["embed"] %>
-  <% if post[:content][:record]["embed"]["$type"] == "app.bsky.embed.recordWithMedia" %>
-    <% post[:content][:record]["embed"]["media"]["images"].each do |image| %>
-      <img src="https://cdn.bsky.app/img/feed_fullsize/plain/<%= post[:content][:author]['did'] %>/<%= image['image']['ref']['$link'] %>/@jpeg" alt="<%= image['alt'] %>" />
-    <% end %>
+<% if record.nil? # Zero levels deep %>
+  <% record = post[:content][:record] %>
+  <% reason = post[:content][:reason] %>
+  <% embed = post[:content][:embed] %>
+<% else %>
+  <% reason = nil %>
+  <% embed = nil %>
+  <% if record['record'] %>
+    <% embed = record['record']['record'] %>
   <% end %>
 <% end %>
+<% if ['app.bsky.feed.post', 'app.bsky.embed.recordWithMedia#view', 'app.bsky.embed.images#view'].include?(record["$type"]) %>
+  <% if reason && reason["$type"] == "app.bsky.feed.defs#reasonRepost" %>
+    <h2><a href="https://bsky.app/profile/<%= post[:content][:author]['handle'] %>/post/<%= post[:content][:uri].split('/')[-1] %>"> RP <%= post[:content][:author]['displayName'] %></a></h2>
+  <% end %>
+  <span style="white-space: pre-wrap"><%= record["text"] %></span>
+  <% begin %>
+    <% if embed %>
+      <% images = [] # Catch-all %>
+      <% videos = [] %>
+      <% if ['app.bsky.embed.recordWithMedia'].include?(embed["$type"]) %>
+        <strong><%= embed["$type"] %></strong>
+        <% images = embed["media"]["images"] %>
+      <% elsif ['app.bsky.embed.recordWithMedia#view'].include?(embed["$type"]) %>
+        <% images = embed["media"]["images"] %>
+      <% elsif ['app.bsky.embed.record#viewRecord'].include?(embed["$type"]) %>
+        <h2><%= embed["author"]["displayName"] %></h2>
+        <%= embed["value"]["text"] %>
+        <% if embed["value"] && embed["value"]["embed"] && embed["value"]["embed"] %>
+          <% embed["value"]["embed"]["media"]["images"].each do |image| %>
+            <% images << image %>
+          <% end %>
+        <% end %>
+      <% elsif ['app.bsky.embed.images#view'].include?(embed["$type"]) %>
+        <% images = embed["images"] %>
+      <% elsif ['app.bsky.embed.images'].include?(embed["$type"]) %>
+        <strong><%= embed["$type"] %></strong>
+        <%= embed %>
+        <% images = embed["images"] %>
+      <% end %>
+      <% if embed["$type"] == "app.bsky.embed.video" %>
+        <% videos << record['embed']['video'] %>
+      <% end %>
+      <% images.each do |image| %>
+        <% if image['fullsize'] %>
+          <% image_name = "#{image['fullsize'].split('/')[-1]}" #image']['ref']['$link']}@jpeg" %>
+        <% else %>
+          <% t = "@jpeg" if image['image']['mimeType'] == 'image/jpeg' %>
+          <% image_name = image['image']['ref']['$link'] + t %>
+        <% end %>
+        <% if post[:content][:filenames][image_name].nil? %> 
+          <% image_url = "https://cdn.bsky.app/img/feed_fullsize/plain/#{post[:content][:author]['did']}/#{image_name}/@jpeg" %>
+        <% else %>
+          <% image_url = "/media/#{person[:name]}/Bluesky/#{BlueskyAccount.where(did: post[:content][:user_did]).first.username}/#{post[:content][:filenames][image_name]}" %>
+        <% end %>
+        <a href="<%= image_url %>" data-fancybox="bluesky_<%= post[:content][:uri].split('/')[-1] %>">
+          <img src="<%= image_url %>" alt="<%= image['alt'] %>" />
+        </a>
+      <% end %>
+      <% videos.each do |video| %>
+        <video poster="https://video.bsky.app/watch/<%= post[:content][:author]['did'] %>/<%= record['embed']['video']['ref']['$link'] %>/thumbnail.jpg" src="https://video.bsky.app/watch/<%= post[:content][:author]['did'] %>/<%= record['embed']['video']['ref']['$link'] %>/playlist.m3u8" type="application/x-mpegURL"></video>
+      <% end %>
+      <% if record == post[:content][:record] %>
+        <div style="padding-left: 30px">
+          <%= render :partial => 'posts/bluesky_post' , locals: {post: post, person: @person, record: post[:content][:embed]} %>
+        </div>
+      <% end %>
+    <% end %>
+  <% rescue => e %>
+    Bluesky Renderer: <%= e.backtrace %>
+  <% end %>
 <% else %>
-  Unknown Type: <%= post[:content][:record]["$type"] %>
+  Unknown Type: <%= record["$type"] %>
 <% end %>
