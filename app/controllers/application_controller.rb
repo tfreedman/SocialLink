@@ -3,7 +3,7 @@ class ApplicationController < ActionController::Base
   before_action :check_session_keys, except: [:update, :auth]
   before_action :service_name_path_cache_update
 
-  SUPPORTED_TYPES = ["android_sms", "ao3_work", "bluesky_post", "colloquy_message", "deviantart_post",
+  SUPPORTED_TYPES = ["android_mms", "android_sms", "ao3_work", "bluesky_post", "colloquy_message", "deviantart_post",
   "facebook_message", "facebook_post", "facebook_photo", "facebook_photo_of",
   "facebook_album", "hangouts_event", "instagram_post", "instagram_story", "mastodon_toot", "mastodon_retoot",
   "tumblr_post-content--photo", "tumblr_post-content--video", "tumblr_post-content--audio",

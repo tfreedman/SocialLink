@@ -323,6 +323,10 @@ class ProfilesController < ApplicationController
         end
 
         if SocialLink::Application.credentials.hindsight_integration
+          if filters["types"].nil? || (filters["types"] && filters["types"].include?("android_mms"))
+            mms_messages = AndroidMms.where(address: phone_numbers, enabled: true).or(AndroidMms.where(contact_name: vcard.fn.first.values[0], enabled: true)).order('date DESC').all
+          end
+
           if filters["types"].nil? || (filters["types"] && filters["types"].include?("android_sms"))
             sms_messages = AndroidSms.where(address: phone_numbers).or(AndroidSms.where(contact_name: vcard.fn.first.values[0])).order('date DESC').all
           end
@@ -460,6 +464,14 @@ class ProfilesController < ApplicationController
             sms_messages.each do |s|
               posts << {sort_time: s.date / 1000, type: 'android_sms', content: s}
               last_timestamps['android_sms'] << s.date / 1000
+            end
+          end
+
+          if mms_messages
+            last_timestamps['android_mms'] = []
+            mms_messages.each do |s|
+              posts << {sort_time: s.date / 1000, type: 'android_mms', content: s}
+              last_timestamps['android_mms'] << s.date / 1000
             end
           end
   

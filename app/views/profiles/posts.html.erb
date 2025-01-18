@@ -59,9 +59,9 @@
         <a href="https://www.pixiv.net/en/artworks/<%= post[:content][:post_id] %>">
           <%= render :partial => 'profiles/pixiv' %>
         </a>
-      <% elsif ['android_sms', 'windows_phone_sms'].include?(post[:type]) %>
+      <% elsif ['android_mms', 'android_sms', 'windows_phone_sms'].include?(post[:type]) %>
         <i class="fas fa-sms"></i>
-        <% if post[:type] == "android_sms" %>
+        <% if ['android_mms', 'android_sms'].include?(post[:type]) %>
           <i class="fab fa-android"></i>
         <% elsif post[:type] == "windows_phone_sms" %>
           <i class="fab fa-windows"></i>
@@ -129,6 +129,8 @@
         <%= render :partial => 'posts/matrix_event' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "pidgin_message" %>
         <p class="<% if post[:content][:real_sender] == @person[:name] %>sent<% else %>received<% end %>"><%= raw post[:content]["message"] %></p>
+      <% elsif post[:type] == "android_mms" %>
+        <p class="<% if post[:content]['sms_type'] == '1' %>sent<% else %>received<% end %>"><%= raw post[:content]["body"] %></p>
       <% elsif post[:type] == "android_sms" %>
         <p class="<% if post[:content]['sms_type'] == '1' %>sent<% else %>received<% end %>"><%= post[:content]["body"] %></p>
       <% elsif post[:type] == "windows_phone_sms" %>
