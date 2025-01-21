@@ -21,4 +21,4 @@
     url = item['thumbnails']['high']['url']
   end
 %>
-<a data-fancybox href="https://www.youtube.com/watch?v=<%= post[:content][:video_id] %>"><img src="<%= url %>" /></a>
+<lite-youtube videoid="<%= post[:content][:video_id] %>"></lite-youtube>
