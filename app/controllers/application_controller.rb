@@ -11,7 +11,7 @@ class ApplicationController < ActionController::Base
   "tumblr_post-content--chat", "tumblr_post-content--link", "tumblr_post-content--quote",
   "pixiv_post", "matrix_event", "windows_phone_sms", "reddit_comment",
   "mamirc_event", "pidgin_message", "twitter_tweet", "twitter_retweet",
-  "webcomics_strip", "youtube_video"]
+  "webcomics_strip", "youtube_video", "youtube_short"]
 
 
   def auth

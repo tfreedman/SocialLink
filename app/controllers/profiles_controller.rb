@@ -159,7 +159,11 @@ class ProfilesController < ApplicationController
         end
         
         if filters["types"].nil? || (filters["types"] && filters["types"].include?("youtube_video"))
-          youtube_videos = YoutubeVideo.where(channel_id: youtube_accounts).order('published_at DESC').all
+          youtube_videos = YoutubeVideo.where(channel_id: youtube_accounts, is_short: false).order('published_at DESC').all
+        end
+
+        if filters["types"].nil? || (filters["types"] && filters["types"].include?("youtube_short"))
+          youtube_shorts = YoutubeVideo.where(channel_id: youtube_accounts, is_short: true).order('published_at DESC').all
         end
 
         if filters["types"].nil? || (filters["types"] && filters["types"].include?("reddit_comment"))
@@ -509,6 +513,14 @@ class ProfilesController < ApplicationController
           youtube_videos.each do |v|
             posts << {sort_time: v.published_at.to_i, type: 'youtube_video', content: v}
             last_timestamps['youtube_video'] << v.published_at.to_i
+          end
+        end
+
+        if youtube_shorts
+          last_timestamps['youtube_short'] = []
+          youtube_shorts.each do |v|
+            posts << {sort_time: v.published_at.to_i, type: 'youtube_short', content: v}
+            last_timestamps['youtube_short'] << v.published_at.to_i
           end
         end
 

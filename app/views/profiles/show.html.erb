@@ -296,9 +296,28 @@
           </li>        
         <% end %>
 
+        <% if (@timeline[:service_counts]['youtube_video'].to_i + @timeline[:service_counts]['youtube_short'].to_i) > 0 %>
+          <li>
+            <strong>YouTube:</strong>
+            <ul>
+              <% if @timeline[:service_counts]['youtube_video'] %>
+                <li data-service="youtube_video">
+                  <input autocomplete="off" type="checkbox" <%= @filters.include?('youtube_video') ? 'checked' : '' %> id="youtube_video"/> <label for="youtube_video">Videos (<%= @timeline[:service_counts]['youtube_video'] || 0 %>)</label>
+                </li>
+              <% end %>
+
+              <% if @timeline[:service_counts]['youtube_short'] %>
+                <li data-service="youtube_short">
+                  <input autocomplete="off" type="checkbox" <%= @filters.include?('youtube_short') ? 'checked' : '' %> id="youtube_short"/> <label for="youtube_short">Shorts (<%= @timeline[:service_counts]['youtube_short'] || 0 %>)</label>
+                </li>
+              <% end %>
+            </ul>
+          </li>
+        <% end %>
+
         <% if (@timeline[:service_counts]['pixiv_post'].to_i + @timeline[:service_counts]['matrix_event'].to_i + @timeline[:service_counts]['android_mms'].to_i + @timeline[:service_counts]['android_sms'].to_i + @timeline[:service_counts]['ao3_work'].to_i +
           @timeline[:service_counts]['windows_phone_sms'].to_i + @timeline[:service_counts]['mamirc_event'].to_i + @timeline[:service_counts]['colloquy_message'].to_i + 
-          @timeline[:service_counts]['pidgin_message'].to_i + @timeline[:service_counts]['deviantart_post'].to_i + @timeline[:service_counts]['youtube_video'].to_i) + @timeline[:service_counts]['hangouts_event'].to_i > 0 %>
+          @timeline[:service_counts]['pidgin_message'].to_i + @timeline[:service_counts]['deviantart_post'].to_i + @timeline[:service_counts]['hangouts_event'].to_i) > 0 %>
           <li>
             <strong>Other:</strong>
             <ul>
@@ -365,12 +384,6 @@
               <% if @timeline[:service_counts]['deviantart_post'] %>
                 <li data-service="deviantart_post">
                   <input autocomplete="off" type="checkbox" <%= @filters.include?('deviantart_post') ? 'checked' : '' %> id="deviantart_post"/> <label for="deviantart_post">DeviantArt (<%= @timeline[:service_counts]['deviantart_post'] || 0 %>)</label>
-                </li>
-              <% end %>
-
-              <% if @timeline[:service_counts]['youtube_video'] %>
-                <li data-service="youtube_video">
-                  <input autocomplete="off" type="checkbox" <%= @filters.include?('youtube_video') ? 'checked' : '' %> id="youtube_video"/> <label for="youtube_video">YouTube (<%= @timeline[:service_counts]['youtube_video'] || 0 %>)</label>
                 </li>
               <% end %>
             </ul>
