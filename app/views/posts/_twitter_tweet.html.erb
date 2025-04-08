@@ -1,74 +1,93 @@
-<div class="tweet">
-<% if post[:content][:is_retweet] %><h2><a href="https://twitter.com/i/status/<%= post[:content][:tweet_id] %>"> RT <% if post[:content][:retweet_data] %><%= post[:content][:retweet_data][:username] %><% else %>Unknown<% end %></a></h2><% end %>
-<% tweet = post[:content].text %>
-<% tweet = tweet.gsub(/pic\.twitter\.com\/[a-zA-Z0-9]*/, '') %>
-<% tweet = tweet.gsub(/(https:\/\/t.co\/).*/).with_index { |_, i|
-  "<a href=\"#{post[:content].entries[:urls][i]}\">#{post[:content].entries[:urls][i]}</a>"
-  }
-%>
-<% tweet = tweet.gsub("\n", '<br />') %>
-<%= raw(tweet) %>
+<% tweets = [] %>
+<% tweets << post[:content] %>
+<% base_ta = TwitterAccount.where(user_id: tweets[0][:user_id]).first %>
 
-<% if post[:content]['is_quoting'] && post[:content].quoting_data %>
-  <br /><br />
-  <strong><a href="https://twitter.com<%= post[:content].quoting_data[:permalink] %>"><%= post[:content].quoting_data[:username] %>:</a></strong>
-  <div style="padding-left: 20px">
-    <% if post[:content].quoting && post[:content].quoting.text %>
-    <% tweet = post[:content].quoting.text %>
-    <% else %>
-      <% tweet = '' %>
+<% continue = true %>
+<% while continue %>
+  <% if tweets[-1].reply_data %>
+    <% reply_tweet_id = tweets[-1].reply_data[:permalink].split('/')[-1] %>
+    <% in_reply_to = TwitterTweet.where(tweet_id: reply_tweet_id).first %>
+    <% if in_reply_to %>
+      <% tweets << in_reply_to %>
+      <% next %>
     <% end %>
-    <% tweet = tweet.gsub(/pic\.twitter\.com\/[a-zA-Z0-9]*/, '') %>
-    <% tweet = tweet.gsub(/(https:\/\/t.co\/).*/).with_index { |_, i|
-      "<a href=\"#{post[:content].quoting.entries[:urls][i]}\">#{post[:content].quoting.entries[:urls][i]}</a>"
+  <% end %>
+  <% continue = false %>
+<% end %>
+<% tweets.reverse! %>
+
+<% tweets.each do |tweet| %>
+  <div class="tweet">
+    <% if tweet[:is_retweet] %><h2><a href="https://twitter.com/i/status/<%= tweet[:tweet_id] %>"> RT <% if tweet[:retweet_data] %><%= tweet[:retweet_data][:username] %><% else %>Unknown<% end %></a></h2><% end %>
+    <% text = tweet.text %>
+    <% text = text.gsub(/pic\.twitter\.com\/[a-zA-Z0-9]*/, '') %>
+    <% text = text.gsub(/(https:\/\/t.co\/).*/).with_index { |_, i|
+      "<a href=\"#{tweet.entries[:urls][i]}\">#{tweet.entries[:urls][i]}</a>"
       }
     %>
-    <% tweet = tweet.gsub("\n", '<br />') %>
-    <%= raw(tweet) %>
-  </div>
-<% end %>
+    <% text = text.gsub("\n", '<br />') %>
+    <%= raw(text) %>
+  
+    <% if tweet['is_quoting'] && tweet.quoting_data %>
+      <br /><br />
+      <strong><a href="https://twitter.com<%= tweet.quoting_data[:permalink] %>"><%= tweet.quoting_data[:username] %>:</a></strong>
+      <div style="padding-left: 20px">
+        <% if tweet.quoting && tweet.quoting.text %>
+        <% text = tweet.quoting.text %>
+        <% else %>
+          <% text = '' %>
+        <% end %>
+        <% text = text.gsub(/pic\.twitter\.com\/[a-zA-Z0-9]*/, '') %>
+        <% text = text.gsub(/(https:\/\/t.co\/).*/).with_index { |_, i|
+          "<a href=\"#{tweet.quoting.entries[:urls][i]}\">#{tweet.quoting.entries[:urls][i]}</a>"
+          }
+        %>
+        <% text = text.gsub("\n", '<br />') %>
+        <%= raw(text) %>
+      </div>
+    <% end %>
 
-<% if post[:content][:is_retweet] && post[:content].original %>
-  <% photos = post[:content].original[:entries][:photos] %>
-  <% videos = post[:content].original[:entries][:videos] %>
-<% else %>
-  <% photos = post[:content][:entries][:photos] %>
-  <% videos = post[:content][:entries][:videos] %>
-<% end %>
+    <% if tweet[:is_retweet] && tweet.original %>
+      <% photos = tweet.original[:entries][:photos] %>
+      <% videos = tweet.original[:entries][:videos] %>
+    <% else %>
+      <% photos = tweet[:entries][:photos] %>
+      <% videos = tweet[:entries][:videos] %>
+    <% end %>
 
-<% photos = [photos] if photos.class == Hash %>
-<% if photos.count < 3; groups = [photos]; else; groups = photos.in_groups(2, false); end %>
-<div class="attachments">
-  <% groups.each_with_index do |group, i| %>
-    <div class="gallery-row"<% if i > 0 %> style="margin-top: .25em"<% end %>>
-      <% group.each do |photo| %>
-        <div class="attachment image">
-          <% if photo.class == Hash %>
-            <% photo['URL'] = photo[:URL] if photo[:URL] %>
-            <% if photo['URL'].class == String %>
-              <a href="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= photo['URL'].split('/')[-1].split('.')[0] %>-orig.<%= photo['URL'].split('/')[-1].split('.')[1] %>" data-fancybox="twitter_<%= post[:content][:tweet_id] %>">
-                <img src="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= photo['URL'].split('/')[-1].split('.')[0] %>-orig.<%= photo['URL'].split('/')[-1].split('.')[1] %>" class="still-image" />
-              </a>
-            <% end %>
-          <% else %>
-            <a href="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" data-fancybox="twitter_<%= post[:content][:tweet_id] %>">
-              <img src="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" class="still-image" />
-            </a>
+    <% photos = [photos] if photos.class == Hash %>
+    <% if photos.count < 3; groups = [photos]; else; groups = photos.in_groups(2, false); end %>
+    <div class="attachments">
+      <% groups.each_with_index do |group, i| %>
+        <div class="gallery-row"<% if i > 0 %> style="margin-top: .25em"<% end %>>
+          <% group.each do |photo| %>
+            <div class="attachment image">
+              <% if photo.class == Hash %>
+                <% photo['URL'] = photo[:URL] if photo[:URL] %>
+                <% if photo['URL'].class == String %>
+                  <a href="/media/<%= person[:name] %>/Twitter/<%= base_ta.username %>/<%= photo['URL'].split('/')[-1].split('.')[0] %>-orig.<%= photo['URL'].split('/')[-1].split('.')[1] %>" data-fancybox="twitter_<%= tweet[:tweet_id] %>">
+                    <img src="/media/<%= person[:name] %>/Twitter/<%= base_ta.username %>/<%= photo['URL'].split('/')[-1].split('.')[0] %>-orig.<%= photo['URL'].split('/')[-1].split('.')[1] %>" class="still-image" />
+                  </a>
+                <% end %>
+              <% else %>
+                <a href="/media/<%= person[:name] %>/Twitter/<%= base_ta.username %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" data-fancybox="twitter_<%= tweet[:tweet_id] %>">
+                  <img src="/media/<%= person[:name] %>/Twitter/<%= base_ta.username %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" class="still-image" />
+                </a>
+              <% end %>
+            </div>
           <% end %>
         </div>
       <% end %>
     </div>
-  <% end %>
-</div>
 
-
-<% videos.each do |v| %>
-  <% video = v["URL"] %>
-  <% next if video.nil? %>
-  <a href="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= video.split('/')[-1].split('.')[0] %>.<%= video.split('/')[-1].split('.')[1].split('?')[0] %>" data-fancybox="twitter_<%= post[:content][:tweet_id] %>">
-    <video controls>
-      <source src="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= video.split('/')[-1].split('.')[0] %>.<%= video.split('/')[-1].split('.')[1].split('?')[0] %>">
-    </video>
-  </a>
+    <% videos.each do |v| %>
+      <% video = v["URL"] %>
+      <% next if video.nil? %>
+      <a href="/media/<%= person[:name] %>/Twitter/<%= base_ta.username %>/<%= video.split('/')[-1].split('.')[0] %>.<%= video.split('/')[-1].split('.')[1].split('?')[0] %>" data-fancybox="twitter_<%= tweet[:tweet_id] %>">
+        <video controls>
+          <source src="/media/<%= person[:name] %>/Twitter/<%= base_ta.username %>/<%= video.split('/')[-1].split('.')[0] %>.<%= video.split('/')[-1].split('.')[1].split('?')[0] %>">
+        </video>
+      </a>
+    <% end %>
+  </div>
 <% end %>
-</div>
