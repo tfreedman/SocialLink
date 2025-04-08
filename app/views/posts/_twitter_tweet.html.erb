@@ -1,3 +1,4 @@
+<div class="tweet">
 <% if post[:content][:is_retweet] %><h2><a href="https://twitter.com/i/status/<%= post[:content][:tweet_id] %>"> RT <% if post[:content][:retweet_data] %><%= post[:content][:retweet_data][:username] %><% else %>Unknown<% end %></a></h2><% end %>
 <% tweet = post[:content].text %>
 <% tweet = tweet.gsub(/pic\.twitter\.com\/[a-zA-Z0-9]*/, '') %>
@@ -34,19 +35,33 @@
   <% photos = post[:content][:entries][:photos] %>
   <% videos = post[:content][:entries][:videos] %>
 <% end %>
-<% photos.each do |photo| %>
-  <% if photo.class == Hash %>
-    <% if photo['URL'].class == String %>
-      <a href="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= photo['URL'].split('/')[-1].split('.')[0] %>-orig.<%= photo['URL'].split('/')[-1].split('.')[1] %>" data-fancybox="twitter_<%= post[:content][:tweet_id] %>">
-        <img src="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= photo['URL'].split('/')[-1].split('.')[0] %>-orig.<%= photo['URL'].split('/')[-1].split('.')[1] %>" />
-      </a>   
-    <% end %>
-  <% else %>
-    <a href="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" data-fancybox="twitter_<%= post[:content][:tweet_id] %>">
-      <img src="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" />
-    </a>
+
+<% photos = [photos] if photos.class == Hash %>
+<% if photos.count < 3; groups = [photos]; else; groups = photos.in_groups(2, false); end %>
+<div class="attachments">
+  <% groups.each_with_index do |group, i| %>
+    <div class="gallery-row"<% if i > 0 %> style="margin-top: .25em"<% end %>>
+      <% group.each do |photo| %>
+        <div class="attachment image">
+          <% if photo.class == Hash %>
+            <% photo['URL'] = photo[:URL] if photo[:URL] %>
+            <% if photo['URL'].class == String %>
+              <a href="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= photo['URL'].split('/')[-1].split('.')[0] %>-orig.<%= photo['URL'].split('/')[-1].split('.')[1] %>" data-fancybox="twitter_<%= post[:content][:tweet_id] %>">
+                <img src="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= photo['URL'].split('/')[-1].split('.')[0] %>-orig.<%= photo['URL'].split('/')[-1].split('.')[1] %>" class="still-image" />
+              </a>
+            <% end %>
+          <% else %>
+            <a href="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" data-fancybox="twitter_<%= post[:content][:tweet_id] %>">
+              <img src="/media/<%= person[:name] %>/Twitter/<%= TwitterAccount.where(user_id: post[:content][:user_id]).first.username %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" class="still-image" />
+            </a>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
   <% end %>
-<% end %>
+</div>
+
+
 <% videos.each do |v| %>
   <% video = v["URL"] %>
   <% next if video.nil? %>
@@ -56,3 +71,4 @@
     </video>
   </a>
 <% end %>
+</div>

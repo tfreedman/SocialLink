@@ -1,0 +1,119 @@
+.tweet {
+  .gallery-row {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: center;
+      overflow: hidden;
+      flex-grow: 1;
+      max-height: 379.5px;
+      max-width: 533px;
+      pointer-events: all;
+
+      .still-image {
+          width: 100%;
+          display: flex;
+      }
+  }
+
+  .attachments {
+      margin-top: .35em;
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      max-height: 600px;
+      border-radius: 7px;
+      overflow: hidden;
+      flex-flow: column;
+      background-color: #0F0F0F;
+      align-items: center;
+      pointer-events: all;
+  
+      .image-attachment {
+          width: 100%;
+      }
+  }
+
+  .attachment {
+    position: relative;
+    line-height: 0;
+    overflow: hidden;
+    margin: 0 .25em 0 0;
+    flex-grow: 1;
+    box-sizing: border-box;
+    min-width: 2em;
+  
+    &:last-child {
+      margin: 0;
+      max-height: 530px;
+    }
+  }
+
+  .gallery-gif video {
+    max-height: 530px;
+    background-color: #101010;
+  }
+
+  .still-image {
+    max-height: 379.5px;
+    max-width: 533px;
+    justify-content: center;
+  
+    img {
+        object-fit: cover;
+        max-width: 100%;
+        max-height: 379.5px;
+        flex-basis: 300px;
+        flex-grow: 1;
+    }
+  }
+
+  .image {
+    display: inline-block;
+  }
+
+  // .single-image {
+  //     display: inline-block;
+  //     width: 100%;
+  //     max-height: 600px;
+  
+  //     .attachments {
+  //         width: unset;
+  //         max-height: unset;
+  //         display: inherit;
+  //     }
+  // }
+
+  .overlay-circle {
+    border-radius: 50%;
+    background-color: #404040;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    display: flex;
+    border-width: 5px;
+    border-color: #D8574D;
+    border-style: solid;
+  }
+
+  .overlay-triangle {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 12px 0 12px 17px;
+    border-color: transparent transparent transparent #D8574D;
+    margin-left: 14px;
+  }
+
+  .media-gif {
+    display: table;
+    background-color: unset;
+    width: unset;
+  }
+
+  .media-body {
+    flex: 1;
+    padding: 0;
+    white-space: pre-wrap;
+  }
+}
