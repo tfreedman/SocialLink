@@ -87,7 +87,7 @@ ActiveRecord::Schema[7.2].define(version: 0) do
     t.index ["to"], name: "fbid_edges_to_idx"
   end
 
-  create_table "fbids", id: :integer, default: -> { "nextval('untitled_table_id_seq1'::regclass)" }, force: :cascade do |t|
+  create_table "fbids", id: :serial, force: :cascade do |t|
     t.text "fbid", null: false
     t.text "fb_account"
     t.text "mobile_html"
@@ -114,7 +114,7 @@ ActiveRecord::Schema[7.2].define(version: 0) do
     t.index ["fbid_type"], name: "fbids_fbid_type_idx"
   end
 
-  create_table "instagram_accounts", id: :integer, default: -> { "nextval('instagram_accounts_id_seq'::regclass)" }, force: :cascade do |t|
+  create_table "instagram_accounts", id: :serial, force: :cascade do |t|
     t.text "username"
     t.text "last_post"
     t.boolean "enabled", default: true
@@ -127,7 +127,7 @@ ActiveRecord::Schema[7.2].define(version: 0) do
     t.boolean "over_18"
   end
 
-  create_table "instagram_posts", id: :integer, default: -> { "nextval('instagram_posts_id_seq'::regclass)" }, force: :cascade do |t|
+  create_table "instagram_posts", id: :serial, force: :cascade do |t|
     t.text "instagram_id"
     t.text "instagram_user_id"
     t.integer "timestamp"
@@ -137,7 +137,7 @@ ActiveRecord::Schema[7.2].define(version: 0) do
     t.index ["timestamp"], name: "instagram_posts_timestamp_idx"
   end
 
-  create_table "instagram_stories", id: :integer, default: -> { "nextval('instagram_stories_id_seq'::regclass)" }, force: :cascade do |t|
+  create_table "instagram_stories", id: :serial, force: :cascade do |t|
     t.text "instagram_user_id"
     t.integer "timestamp"
     t.text "filename"
@@ -230,7 +230,7 @@ ActiveRecord::Schema[7.2].define(version: 0) do
     t.index ["created_utc"], name: "reddit_comments_created_utc_idx"
   end
 
-  create_table "service_name_path_caches", id: :integer, default: -> { "nextval('service_name_path_cache_id_seq'::regclass)" }, force: :cascade do |t|
+  create_table "service_name_path_caches", id: :serial, force: :cascade do |t|
     t.text "service"
     t.text "name"
     t.text "username"
@@ -238,7 +238,7 @@ ActiveRecord::Schema[7.2].define(version: 0) do
     t.text "uid"
   end
 
-  create_table "social_link_contacts", id: :integer, default: -> { "nextval('timeline_contacts_id_seq'::regclass)" }, force: :cascade do |t|
+  create_table "social_link_contacts", id: :serial, force: :cascade do |t|
     t.text "uid"
     t.integer "last_atime", default: 0
     t.integer "last_updated"
@@ -287,7 +287,7 @@ ActiveRecord::Schema[7.2].define(version: 0) do
     t.timestamptz "last_partial_scraped_at"
   end
 
-  create_table "twitter_tweets", id: :integer, default: -> { "nextval('tweets_id_seq'::regclass)" }, force: :cascade do |t|
+  create_table "twitter_tweets", id: :serial, force: :cascade do |t|
     t.text "user_id", null: false
     t.text "tweet_id", null: false
     t.boolean "is_retweet", null: false
