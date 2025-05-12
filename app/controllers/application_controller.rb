@@ -10,7 +10,7 @@ class ApplicationController < ActionController::Base
   "tumblr_post-content--text", "tumblr_post-content--answer", "tumblr_post-content--iframe",
   "tumblr_post-content--chat", "tumblr_post-content--link", "tumblr_post-content--quote",
   "pixiv_post", "matrix_event", "windows_phone_sms", "reddit_comment",
-  "mamirc_event", "pidgin_message", "twitter_tweet", "twitter_retweet",
+  "mamirc_event", "pidgin_message", "twitter_tweet", "twitter_reply", "twitter_retweet",
   "webcomics_strip", "youtube_video", "youtube_short"]
 
 

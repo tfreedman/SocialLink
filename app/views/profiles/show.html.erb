@@ -279,6 +279,12 @@
                   <input autocomplete="off" type="checkbox" <%= @filters.include?('twitter_retweet') ? 'checked' : '' %> id="twitter_retweet"/> <label for="twitter_retweet">Retweets (<%= @timeline[:service_counts]['twitter_retweet'] || 0 %>)</label>
                 </li>
               <% end %>
+
+              <% if @timeline[:service_counts]['twitter_reply'] %>
+                <li data-service="twitter_reply">
+                  <input autocomplete="off" type="checkbox" <%= @filters.include?('twitter_reply') ? 'checked' : '' %> id="twitter_reply"/> <label for="twitter_reply">Replies (<%= @timeline[:service_counts]['twitter_reply'] || 0 %>)</label>
+                </li>
+              <% end %>
               <br />
             </ul>
           </li>

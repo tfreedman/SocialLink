@@ -42,7 +42,7 @@
         </a>
       <% elsif post[:type] == "reddit_comment" %>
         <a href="<%= post[:content][:link_permalink] %><%= post[:content][:reddit_id] %>"><i class="fab fa-reddit"></i></a>
-      <% elsif ["twitter_tweet", "twitter_retweet"].include?(post[:type]) %>
+      <% elsif ["twitter_tweet", "twitter_retweet", "twitter_reply"].include?(post[:type]) %>
         <a href="https://twitter.com/i/status/<%= post[:content][:tweet_id] %>"><i class="fab fa-twitter"></i></a>
       <% elsif ["mastodon_toot", "mastodon_retoot"].include?(post[:type]) %>
         <a href="<%= post[:content][:url] %>"><i class="fab fa-mastodon"></i></a>
@@ -153,7 +153,7 @@
         <% if post[:content]["content"] %>
           <p class="<% if post[:content]['sender_name'] != SocialLink::Application.credentials.my_name %>sent<% else %>received<% end %>"><%= post[:content]["content"] %></p>
         <% end %>
-      <% elsif ["twitter_tweet", "twitter_retweet"].include?(post[:type]) %>
+      <% elsif ["twitter_tweet", "twitter_retweet", "twitter_reply"].include?(post[:type]) %>
         <%= render :partial => 'posts/twitter_tweet' , locals: {post: post, person: @person} %>
       <% elsif ["mastodon_toot", "mastodon_retoot"].include?(post[:type]) %>
         <%= render :partial => 'posts/mastodon_toot' , locals: {post: post, person: @person} %>

@@ -303,11 +303,11 @@ class ProfilesController < ApplicationController
           end
         end
 
-        if filters["types"].nil? || (filters["types"] && (filters["types"].include?("twitter_tweet")) || filters["types"].include?("twitter_retweet"))
+        if filters["types"].nil? || (filters["types"] && (filters["types"].include?("twitter_tweet")) || filters["types"].include?("twitter_retweet") || filters["types"].include?("twitter_reply"))
           twitter_ids = TwitterAccount.where(uid: uid).pluck(:user_id)
           twitter_posts = []
           if filters["types"].nil? || (filters["types"] && filters["types"].include?("twitter_retweet"))
-            TwitterTweet.where(user_id: twitter_ids, is_retweet: true).pluck(:id, :time, :is_retweet).each do |id, time, is_retweet|
+            TwitterTweet.where(user_id: twitter_ids, is_retweet: true, is_reply: false).pluck(:id, :time, :is_retweet).each do |id, time, is_retweet|
               posts << {sort_time: time.to_i, type: is_retweet ? 'twitter_retweet' : 'twitter_tweet', id: id}
               if last_timestamps[(is_retweet ? 'twitter_retweet' : 'twitter_tweet')].nil?
                 last_timestamps[(is_retweet ? 'twitter_retweet' : 'twitter_tweet')] = []
@@ -316,12 +316,21 @@ class ProfilesController < ApplicationController
             end
           end
           if filters["types"].nil? || (filters["types"] && filters["types"].include?("twitter_tweet"))
-            TwitterTweet.where(user_id: twitter_ids, is_retweet: false).pluck(:id, :time, :is_retweet).each do |id, time, is_retweet|
+            TwitterTweet.where(user_id: twitter_ids, is_retweet: false, is_reply: false).pluck(:id, :time, :is_retweet).each do |id, time, is_retweet|
               posts << {sort_time: time.to_i, type: is_retweet ? 'twitter_retweet' : 'twitter_tweet', id: id}
               if last_timestamps[(is_retweet ? 'twitter_retweet' : 'twitter_tweet')].nil?
                 last_timestamps[(is_retweet ? 'twitter_retweet' : 'twitter_tweet')] = []
               end
               last_timestamps[(is_retweet ? 'twitter_retweet' : 'twitter_tweet')] << time.to_i
+            end
+          end
+          if filters["types"].nil? || (filters["types"] && filters["types"].include?("twitter_reply"))
+            TwitterTweet.where(user_id: twitter_ids, is_reply: true).pluck(:id, :time, :is_reply).each do |id, time, is_reply|
+              posts << {sort_time: time.to_i, type: 'twitter_reply', id: id}
+              if last_timestamps['twitter_reply'].nil?
+                last_timestamps['twitter_reply'] = []
+              end
+              last_timestamps['twitter_reply'] << time.to_i
             end
           end
         end
