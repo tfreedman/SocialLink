@@ -36,3 +36,4 @@ yarn-debug.log*
 
 /vendor/bundle
 /contacts.yml
+/contacts/*

@@ -18,18 +18,22 @@ class PostsController < ApplicationController
 
       if post
         contacts = []
-        address_books = YAML.load(File.read("contacts.yml"))
-        address_books.each do |key, value|
-          value.each do |contact|
-            contacts << {contact: contact, address_book: key}
+        vcfs = []
+        Dir["#{Rails.root}/contacts/*"].each do |address_book|
+          ab = File.read(address_book)
+          ab.split(/(END:VCARD)/).each_slice(2) { |s| vcfs << s.join }; vcfs
+        end
+        vcfs.each do |vcf|
+          if vcf.include?('BEGIN:VCARD') && vcf.include?('UID')
+            contacts << VCardigan.parse(vcf)
           end
         end
+
 
         facebook_accounts = []
         pixiv_accounts = []
 
-        contacts.each do |contact|
-          vcard = VCardigan.parse(contact[:contact][:card])
+        contacts.each do |vcard|
           if vcard.field('x-socialprofile')
             vcard.field('x-socialprofile').each do |profile|
               if profile.value.include?("facebook.com/")

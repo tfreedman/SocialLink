@@ -31,20 +31,34 @@ class ApplicationController < ActionController::Base
 
   def service_name_path_cache_update
     snpc = ServiceNamePathCache.where(service: 'sociallink').first
-    return if snpc && snpc.updated_at >= File.mtime("contacts.yml")
+
+    oldest_file = Time.at(0)
+    Dir["#{Rails.root}/contacts/*"].each do |address_book|
+      if oldest_file == Time.at(0)
+        oldest_file = File.mtime(address_book)
+      end
+      if oldest_file < File.mtime(address_book)
+        oldest_file = File.mtime(address_book)
+      end
+    end
+
+    return if snpc && snpc.updated_at >= oldest_file
     contacts = []
 
     start_time = Time.now
 
-    address_books = YAML.load(File.read("contacts.yml")) ; nil
-    address_books.each do |key, value|
-      value.each do |contact|
-        contacts << contact
+    vcfs = []
+    Dir["#{Rails.root}/contacts/*"].each do |address_book|
+      ab = File.read(address_book)
+      ab.split(/(END:VCARD)/).each_slice(2) { |s| vcfs << s.join }; vcfs
+    end
+    vcfs.each do |vcf|
+      if vcf.include?('BEGIN:VCARD') && vcf.include?('UID')
+        contacts << VCardigan.parse(vcf)
       end
-    end ; nil
+    end
 
-    contacts.each do |contact|
-      vcard = VCardigan.parse(contact[:card])
+    contacts.each do |vcard|
       uid = vcard.uid.first.values[0]
 
       if vcard.field('impp')
@@ -97,15 +111,18 @@ class ApplicationController < ActionController::Base
     service = params["service"] || nil
 
     @contacts = []
-    address_books = YAML.load(File.read("contacts.yml")) ; nil
-    address_books.each do |key, value|
-      value.each do |contact|
-        @contacts << contact
+    vcfs = []
+    Dir["#{Rails.root}/contacts/*"].each do |address_book|
+      ab = File.read(address_book)
+      ab.split(/(END:VCARD)/).each_slice(2) { |s| vcfs << s.join }; vcfs
+    end
+    vcfs.each do |vcf|
+      if vcf.include?('BEGIN:VCARD') && vcf.include?('UID')
+        @contacts << VCardigan.parse(vcf)
       end
-    end  ; nil
-    
-    @contacts.shuffle.each do |contact|
-      vcard = VCardigan.parse(contact[:card])
+    end
+
+    @contacts.shuffle.each do |vcard|
       uid = vcard.uid.first.values[0]
       if uids.include?(uid) || uids == []
         logger.info "Indexing #{vcard.fn.first.values[0]}"

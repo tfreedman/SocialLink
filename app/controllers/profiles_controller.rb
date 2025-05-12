@@ -44,18 +44,22 @@ class ProfilesController < ApplicationController
   
   def fetch_posts(uid, filters = {})
     @contacts = []
-    address_books = YAML.load(File.read("contacts.yml"))
-    address_books.each do |key, value|
-      value.each do |contact|
-        @contacts << {contact: contact, address_book: key}
+    Dir["#{Rails.root}/contacts/*"].each do |address_book|
+      vcfs = []
+      ab = File.read(address_book)
+      ab.split(/(END:VCARD)/).each_slice(2) { |s| vcfs << s.join }; vcfs
+      vcfs.each do |vcf|
+        if vcf.include?('BEGIN:VCARD') && vcf.include?('UID')
+          @contacts << {vcard: VCardigan.parse(vcf), address_book: address_book.split('/contacts/')[1].split('.vcf')[0]}
+        end
       end
     end
 
     last_timestamps = {}
 
-    @contacts.each do |contact|
-      vcard = VCardigan.parse(contact[:contact][:card])
-
+    @contacts.each do |k|
+      vcard = k[:vcard]
+      address_book = k[:address_book]
       if uid == vcard.uid.first.values[0]
         sc = SocialLinkContact.where(uid: vcard.uid.first.values[0]).first
         query_cache = sc.query_cache || {}
@@ -591,7 +595,7 @@ class ProfilesController < ApplicationController
         posts.each do |post|
           timestamps << post[:sort_time]
         end
-        @person = {name: vcard.fn.first.values[0], uid: uid, vcard: vcard, posts: posts.uniq, post_count: posts.count, accounts: accounts, timestamps: timestamps, address_book: contact[:address_book], last_timestamps: last_timestamps}
+        @person = {name: vcard.fn.first.values[0], uid: uid, vcard: vcard, posts: posts.uniq, post_count: posts.count, accounts: accounts, timestamps: timestamps, address_book: address_book, last_timestamps: last_timestamps}
       end
     end
     return @person
@@ -602,17 +606,21 @@ class ProfilesController < ApplicationController
     @contacts = []
     @pagename = 'index'
     @title = 'Home'
-    address_books = YAML.load(File.read("contacts.yml"))
-    address_books.each do |key, value|
-      value.each do |contact|
-        @contacts << {contact: contact, address_book: key}
+
+    vcfs = []
+    Dir["#{Rails.root}/contacts/*"].each do |address_book|
+      ab = File.read(address_book)
+      ab.split(/(END:VCARD)/).each_slice(2) { |s| vcfs << s.join }; vcfs
+    end
+    vcfs.each do |vcf|
+      if vcf.include?('BEGIN:VCARD') && vcf.include?('UID')
+        @contacts << VCardigan.parse(vcf)
       end
     end
 
     @people = []
     @recently_updated = []
-    @contacts.each do |contact|
-      vcard = VCardigan.parse(contact[:contact][:card])
+    @contacts.each do |vcard|
       person = {name: vcard.fn.first.values[0], uid: vcard.uid.first.values[0], vcard: vcard, recently_updated: false}
       sc = SocialLinkContact.where(uid: vcard.uid.first.values[0]).first
       if sc.nil?
@@ -644,16 +652,20 @@ class ProfilesController < ApplicationController
     @prev_page_url = ""
     @next_page_url = ""
 
+
     @contacts = []
-    address_books = YAML.load(File.read("contacts.yml"))
-    address_books.each do |key, value|
-      value.each do |contact|
-        @contacts << {contact: contact, address_book: key}
+    vcfs = []
+    Dir["#{Rails.root}/contacts/*"].each do |address_book|
+      ab = File.read(address_book)
+      ab.split(/(END:VCARD)/).each_slice(2) { |s| vcfs << s.join }; vcfs
+    end
+    vcfs.each do |vcf|
+      if vcf.include?('BEGIN:VCARD') && vcf.include?('UID')
+        @contacts << VCardigan.parse(vcf)
       end
     end
 
-    @contacts.each do |contact|
-      vcard = VCardigan.parse(contact[:contact][:card])
+    @contacts.each do |vcard|
       uid = vcard.uid.first.values[0]
 
       if uid == params["uuid"]
@@ -735,34 +747,39 @@ class ProfilesController < ApplicationController
 
     @bad_uids = []
     @bad_fb_contacts = {}
+    contacts_raw = []
     contacts = []
     contact_uid_to_name = {}
     contact_name_to_uid = {}
 
     mxid_to_name = {}
 
-    address_books = YAML.load(File.read("contacts.yml")) ; nil
-    address_books.each do |key, value|
-      value.each do |contact|
-        vcard = VCardigan.parse(contact[:card])
-        name = vcard.fn.first.values[0]
-        uid = vcard.uid.first.values[0]
-        contacts << {name: name, uid: uid, contact: contact}
-        contact_uid_to_name[uid] = name #for dfps
-        contact_name_to_uid[name] = uid
+    vcfs = []
+    Dir["#{Rails.root}/contacts/*"].each do |address_book|
+      ab = File.read(address_book)
+      ab.split(/(END:VCARD)/).each_slice(2) { |s| vcfs << s.join }; vcfs
+    end
+    vcfs.each do |vcf|
+      if vcf.include?('BEGIN:VCARD') && vcf.include?('UID')
+        contacts_raw << VCardigan.parse(vcf)
+      end
+    end
 
-        if vcard.field('impp')
-          vcard.field('impp').each do |profile|
-            if profile.value.match(/@(.*):(.*)\.(.*)/)
-              mxid_to_name[profile.value] = name
-            end
+    contacts_raw.each do |vcard|
+      name = vcard.fn.first.values[0]
+      uid = vcard.uid.first.values[0]
+      contacts << {name: name, uid: uid, contact: vcard}
+      contact_uid_to_name[uid] = name #for dfps
+      contact_name_to_uid[name] = uid
+
+      if vcard.field('impp')
+        vcard.field('impp').each do |profile|
+          if profile.value.match(/@(.*):(.*)\.(.*)/)
+            mxid_to_name[profile.value] = name
           end
         end
       end
-    end ; nil
 
-    contacts.each do |contact|
-      vcard = VCardigan.parse(contact[:contact][:card])
       if vcard.uid.first.values[0].gsub(/[^0-9a-z\-]/i, '').length != vcard.uid.first.values[0].length
         @bad_uids << {name: vcard.fn.first.values[0], uid: vcard.uid.first.values[0]}
       end
