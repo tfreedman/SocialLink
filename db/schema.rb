@@ -114,7 +114,7 @@ ActiveRecord::Schema[7.2].define(version: 0) do
     t.index ["fbid_type"], name: "fbids_fbid_type_idx"
   end
 
-  create_table "instagram_accounts", id: :integer, default: -> { "nextval('instagrams_id_seq'::regclass)" }, force: :cascade do |t|
+  create_table "instagram_accounts", id: :integer, default: -> { "nextval('instagram_accounts_id_seq'::regclass)" }, force: :cascade do |t|
     t.text "username"
     t.text "last_post"
     t.boolean "enabled", default: true
@@ -127,7 +127,7 @@ ActiveRecord::Schema[7.2].define(version: 0) do
     t.boolean "over_18"
   end
 
-  create_table "instagram_posts", id: :integer, default: -> { "nextval('instagrams_posts_id_seq'::regclass)" }, force: :cascade do |t|
+  create_table "instagram_posts", id: :integer, default: -> { "nextval('instagram_posts_id_seq'::regclass)" }, force: :cascade do |t|
     t.text "instagram_id"
     t.text "instagram_user_id"
     t.integer "timestamp"
@@ -137,7 +137,7 @@ ActiveRecord::Schema[7.2].define(version: 0) do
     t.index ["timestamp"], name: "instagram_posts_timestamp_idx"
   end
 
-  create_table "instagram_stories", id: :integer, default: -> { "nextval('\"Instagram_stories_id_seq\"'::regclass)" }, force: :cascade do |t|
+  create_table "instagram_stories", id: :integer, default: -> { "nextval('instagram_stories_id_seq'::regclass)" }, force: :cascade do |t|
     t.text "instagram_user_id"
     t.integer "timestamp"
     t.text "filename"
