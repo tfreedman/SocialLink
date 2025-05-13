@@ -78,7 +78,10 @@ class ApplicationController < ActionController::Base
           elsif profile.value.include?("reddit.com/user/") || profile.value.include?("reddit.com/u/")
             ServiceNamePathCache.create(uid: uid, service: 'Reddit', name: vcard.fn.first.values[0], username: profile.value.split('/')[-1], updated_at: start_time)
           elsif profile.value.include?("instagram.com/")
-            ServiceNamePathCache.create(uid: uid, service: 'Instagram', name: vcard.fn.first.values[0], username: InstagramAccount.where(username: profile.value.split('instagram.com/')[1].split('/')[0]).first.instagram_id, updated_at: start_time)
+            ig = InstagramAccount.where(username: profile.value.split('instagram.com/')[1].split('/')[0]).first
+            if ig
+              ServiceNamePathCache.create(uid: uid, service: 'Instagram', name: vcard.fn.first.values[0], username: ig.instagram_id, updated_at: start_time)
+            end
           elsif profile.value.include?("deviantart.com/")
             ServiceNamePathCache.create(uid: uid, service: 'DeviantArt', name: vcard.fn.first.values[0], username: profile.value.split('deviantart.com/')[1].split('/')[0].downcase, updated_at: start_time)
           elsif profile.value.include?("pixiv.net/")
