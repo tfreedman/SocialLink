@@ -96,13 +96,19 @@ class ProfilesController < ApplicationController
               reddit_accounts << profile.value.split('/')[-1]
             elsif profile.value.include?("instagram.com/")
               accounts << {service: 'instagram', url: profile.value}
-              instagram_accounts << InstagramAccount.where(username: profile.value.split('instagram.com/')[1].split('/')[0]).first.instagram_id
+              ig = InstagramAccount.where(username: profile.value.split('instagram.com/')[1].split('/')[0]).first
+              if ig
+                instagram_accounts << ig.instagram_id
+              end
             elsif profile.value.include?("deviantart.com/")
               accounts << {service: 'deviantart', url: profile.value}
               deviantart_accounts << profile.value.split('deviantart.com/')[1].split('/')[0].downcase
             elsif profile.value.count('@') == 2
               accounts << {service: 'mastodon', url: 'https://' + profile.value.split('@')[2] + '/@' + profile.value.split('@')[1]}
-              mastodon_accounts << MastodonAccount.where(username: profile.value).first.user_id
+              ma = MastodonAccount.where(username: profile.value).first
+              if ma
+                mastodon_accounts << ma.user_id
+              end
             elsif profile.value.include?("archiveofourown.org/users/")
               accounts << {service: 'ao3', url: profile.value}
               ao3_accounts << profile.value.split('/users/')[1].split('/')[0]
