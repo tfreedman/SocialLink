@@ -7,8 +7,6 @@ class ProfilesController < ApplicationController
     page_number = params["page"].to_i || 1
     pagination = 100
 
-    @matrix_hs_url = SocialLink::Application.credentials.matrix_hs_url
-
     @person = fetch_posts(params["uuid"], params["filters"] || {})
     if params["update_filters"] == "true" && params["filters"]
       SocialLinkContact.where(uid: params["uuid"]).first.update(default_filters: params["filters"]["types"])
@@ -363,20 +361,21 @@ class ProfilesController < ApplicationController
           end
 
           if vcard.fn.first.values[0].start_with?('#') # Group Chat
+            room_name = vcard.fn.first.values[0][1..-1]
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("mamirc_event"))
-              mamirc_events = MamircEvent.where(real_sender: vcard.fn.first.values[0]).or(MamircEvent.where(real_receiver: vcard.fn.first.values[0])).order('timestamp DESC').all
+              mamirc_events = MamircEvent.where(real_sender: room_name).or(MamircEvent.where(real_receiver: room_name)).order('timestamp DESC').all
             end
   
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("colloquy_message"))
-              colloquy_messages = ColloquyMessage.where(real_sender: vcard.fn.first.values[0], enabled: true).or(ColloquyMessage.where(real_receiver: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC').all
+              colloquy_messages = ColloquyMessage.where(real_sender: room_name, enabled: true).or(ColloquyMessage.where(real_receiver: room_name, enabled: true)).order('timestamp DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("pidgin_message"))
-              pidgin_messages = PidginMessage.where(enabled: true, real_sender: vcard.fn.first.values[0]).or(PidginMessage.where(enabled: true, real_receiver: vcard.fn.first.values[0])).order('timestamp DESC').all
+              pidgin_messages = PidginMessage.where(enabled: true, real_sender: room_name).or(PidginMessage.where(enabled: true, real_receiver: room_name)).order('timestamp DESC').all
             end
           
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("matrix_event"))
-              matrix_rooms = MatrixRoom.where(enabled: [true, nil], name: vcard.fn.first.values[0]).pluck(:room_id)
+              matrix_rooms = MatrixRoom.where(enabled: [true, nil], name: room_name).pluck(:room_id)
               matrix_events = MatrixEvent.where(room_id: matrix_rooms, event_type: 'm.room.message').order('origin_server_ts DESC').all
             end
           else
