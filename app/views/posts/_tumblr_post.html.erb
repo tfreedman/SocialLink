@@ -20,8 +20,31 @@
   <%= raw(post[:text]) %>
   chat
 <% elsif post[:type] == "tumblr_post-content--link" %>
-  <%= raw(post[:text]) %>
-  link
+  <% x = Nokogiri::HTML.parse(post[:content][:xml_dump]) %>
+
+  <% link = Nokogiri::HTML(x.css('tumblr post link-text').text) %>
+  <a href="<%= x.css('tumblr post link-url').text %>"><%= raw link %></a>
+
+  <% description = Nokogiri::HTML(x.css('tumblr post link-description').text) %>
+  <% description.css('img').each do |image|
+    url = nil
+    size = nil
+    if image.attr("srcset")
+        image.attr("srcset").split(', ').each do |srcset|
+        if !size || srcset.split(' ')[1].to_i > size
+          url = srcset.split(' ')[0]
+          size = srcset.split(' ')[1].to_i
+        end
+        image.remove_attribute('srcset')
+        image.attributes["src"].value = "/media/#{person[:name]}/Tumblr/#{post[:content][:username]}/#{image.attr('src').split('/')[-1]}"
+      end
+    else
+      image.attributes["src"].value = "/media/#{person[:name]}/Tumblr/#{post[:content][:username]}/#{image.attr('src').split('/')[-1]}"
+    end
+    image.wrap("<a data-fancybox=\"tumblr_#{post[:content][:post_id]}\" href=\"/media/#{person[:name]}/Tumblr/#{post[:content][:username]}/#{image.attr('src').split('/')[-1]}\">")
+  end %>
+
+  <%= raw(description.to_html) %>  
 <% elsif post[:type] == "tumblr_post-content--quote" %>
   <%= raw(post[:text]) %>
   quote
@@ -44,6 +67,27 @@
   <% end %>
 <% elsif post[:type] == "tumblr_post-content--answer" %>
   <% x = Nokogiri::HTML.parse(post[:content][:xml_dump]) %>
-  <% text = x.css('tumblr post').text %>
-  <%= raw(text) %>
+  <% question = Nokogiri::HTML(x.css('tumblr post question').text) %>
+  <%= raw(question) %>
+
+  <% answer = Nokogiri::HTML(x.css('tumblr post answer').text) %>
+  <% answer.css('img').each do |image|
+    url = nil
+    size = nil
+    if image.attr("srcset")
+        image.attr("srcset").split(', ').each do |srcset|
+        if !size || srcset.split(' ')[1].to_i > size
+          url = srcset.split(' ')[0]
+          size = srcset.split(' ')[1].to_i
+        end
+        image.remove_attribute('srcset')
+        image.attributes["src"].value = "/media/#{person[:name]}/Tumblr/#{post[:content][:username]}/#{image.attr('src').split('/')[-1]}"
+      end
+    else
+      image.attributes["src"].value = "/media/#{person[:name]}/Tumblr/#{post[:content][:username]}/#{image.attr('src').split('/')[-1]}"
+    end
+    image.wrap("<a data-fancybox=\"tumblr_#{post[:content][:post_id]}\" href=\"/media/#{person[:name]}/Tumblr/#{post[:content][:username]}/#{image.attr('src').split('/')[-1]}\">")
+  end %>
+
+  <%= raw(answer.to_html) %>
 <% end %>
