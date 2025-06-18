@@ -1,7 +1,29 @@
+<% x = Nokogiri::HTML.parse(post[:content][:xml_dump]) %>
 <% if post[:type] == "tumblr_post-content--text" %>
-  <%= raw(post[:text]) %>
+  <% title = Nokogiri::HTML(x.css('tumblr post regular-title').text) %>
+  <%= raw(title) %>
+
+  <% body = Nokogiri::HTML(x.css('tumblr post regular-body').text) %>
+  <% body.css('img').each do |image|
+    url = nil
+    size = nil
+    if image.attr("srcset")
+        image.attr("srcset").split(', ').each do |srcset|
+        if !size || srcset.split(' ')[1].to_i > size
+          url = srcset.split(' ')[0]
+          size = srcset.split(' ')[1].to_i
+        end
+        image.remove_attribute('srcset')
+        image.attributes["src"].value = "/media/#{person[:name]}/Tumblr/#{post[:content][:username]}/#{image.attr('src').split('/')[-1]}"
+      end
+    else
+      image.attributes["src"].value = "/media/#{person[:name]}/Tumblr/#{post[:content][:username]}/#{image.attr('src').split('/')[-1]}"
+    end
+    image.wrap("<a data-fancybox=\"tumblr_#{post[:content][:post_id]}\" href=\"/media/#{person[:name]}/Tumblr/#{post[:content][:username]}/#{image.attr('src').split('/')[-1]}\">")
+  end %>
+
+  <%= raw(body.to_html) %>
 <% elsif post[:type] == "tumblr_post-content--video" %>
-  <% x = Nokogiri::HTML.parse(post[:content][:xml_dump]) %>
   <% text = x.css('tumblr post').text %>
   <% begin %>
     <% url = "https://ve.media.tumblr.com/" + Nokogiri::HTML.parse(x.css('video-player')[0].text).css('source').attribute('src').text.split('/')[-2] + '_480.mp4' %>
@@ -11,16 +33,24 @@
   <% rescue %>
      video
   <% end %>
-<% elsif post[:type] == "tumblr_post-content--audio" %>
-  <% x = Nokogiri::HTML.parse(post[:content][:xml_dump]) %>
+<% elsif ["tumblr_post-content--chat", "tumblr_post-content--quote", "tumblr_post-content--iframe"].include?(post[:type]) %>
   <% text = x.css('tumblr post').text %>
   <%= raw(text) %>
-  audio
-<% elsif post[:type] == "tumblr_post-content--chat" %>
-  <%= raw(post[:text]) %>
-  chat
+  <%= post[:type] %>
+<% elsif post[:type] == "tumblr_post-content--audio" %>
+  <%= raw x.css('audio-caption')[0].text %>
+  <figure>
+    <% begin %>
+      <figcaption><%= x.css('id3-title')[0].text %></figcaption>
+    <% rescue %>
+    <% end %>
+    <audio controls>
+      <source src="<%= "/media/#{person[:name]}/Tumblr/#{post[:content][:username]}/#{post[:content][:assets].values[0][:filename]}" %>" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+  </figure>
+  <br />
 <% elsif post[:type] == "tumblr_post-content--link" %>
-  <% x = Nokogiri::HTML.parse(post[:content][:xml_dump]) %>
 
   <% link = Nokogiri::HTML(x.css('tumblr post link-text').text) %>
   <a href="<%= x.css('tumblr post link-url').text %>"><%= raw link %></a>
@@ -45,12 +75,6 @@
   end %>
 
   <%= raw(description.to_html) %>  
-<% elsif post[:type] == "tumblr_post-content--quote" %>
-  <%= raw(post[:text]) %>
-  quote
-<% elsif post[:type] == "tumblr_post-content--iframe" %>
-  <%= raw(post[:text]) %>
-  iframe
 <% elsif post[:type] == "tumblr_post-content--photo" %>
   <% output = Nokogiri::XML.parse(post[:content][:xml_dump]) %>
   <% if output.css('photo-caption').count > 0 %>
@@ -66,9 +90,8 @@
     <% end %>
   <% end %>
 <% elsif post[:type] == "tumblr_post-content--answer" %>
-  <% x = Nokogiri::HTML.parse(post[:content][:xml_dump]) %>
   <% question = Nokogiri::HTML(x.css('tumblr post question').text) %>
-  <%= raw(question) %>
+  <strong><%= x.css('post').attribute('asking_blog').value %></strong> asked: <%= raw(question) %>
 
   <% answer = Nokogiri::HTML(x.css('tumblr post answer').text) %>
   <% answer.css('img').each do |image|
@@ -90,4 +113,8 @@
   end %>
 
   <%= raw(answer.to_html) %>
+<% end %>
+
+<% x.css('post tag').each do |tag| %>
+  <em>#<%= tag.text %></em>
 <% end %>
