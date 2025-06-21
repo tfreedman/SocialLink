@@ -302,7 +302,8 @@ class ProfilesController < ApplicationController
           filters["types"].include?("tumblr_post-content--photo") || filters["types"].include?("tumblr_post-content--video") || filters["types"].include?("tumblr_post-content--audio") ||
           filters["types"].include?("tumblr_post-content--text") || filters["types"].include?("tumblr_post-content--answer") || filters["types"].include?("tumblr_post-content--iframe") ||
           filters["types"].include?("tumblr_post-content--chat") || filters["types"].include?("tumblr_post-content--link") || filters["types"].include?("tumblr_post-content--quote")))
-          TumblrPost.where(username: tumblr_accounts).pluck(:id, :timestamp, :post_type).each do |id, timestamp, post_type|
+          TumblrPost.where(username: tumblr_accounts, enabled: true).pluck(:id, :timestamp, :post_type).each do |id, timestamp, post_type|
+            next if filters["types"] && !filters["types"].include?("tumblr_#{post_type}")
             posts << {sort_time: timestamp.to_i, type: "tumblr_#{post_type}", id: id}
             if last_timestamps["tumblr_#{post_type}"].nil?
               last_timestamps["tumblr_#{post_type}"] = []
