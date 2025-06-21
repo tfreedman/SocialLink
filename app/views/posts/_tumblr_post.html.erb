@@ -4,39 +4,57 @@
   <%= raw(title) %>
 
   <% body = Nokogiri::HTML(x.css('tumblr post regular-body').text) %>
-  <% body.css('img').each do |image|
-    url = nil
-    size = nil
-    if image.attr("srcset")
-        image.attr("srcset").split(', ').each do |srcset|
-        if !size || srcset.split(' ')[1].to_i > size
-          url = srcset.split(' ')[0]
-          size = srcset.split(' ')[1].to_i
-        end
-        image.remove_attribute('srcset')
-        image.attributes["src"].value = "/media/#{person[:name]}/Tumblr/#{post[:content][:username]}/#{image.attr('src').split('/')[-1]}"
-      end
-    else
-      image.attributes["src"].value = "/media/#{person[:name]}/Tumblr/#{post[:content][:username]}/#{image.attr('src').split('/')[-1]}"
-    end
-    image.wrap("<a data-fancybox=\"tumblr_#{post[:content][:post_id]}\" href=\"/media/#{person[:name]}/Tumblr/#{post[:content][:username]}/#{image.attr('src').split('/')[-1]}\">")
-  end %>
-
+  <% body.css('img').each do |image| %>
+    <% asset_name = "#{image.attribute('src').value.split('/')[-1].split('?')[0]}" %>
+    <% if post[:content][:assets] && post[:content][:assets][asset_name] %>
+      <% if post[:content][:assets][asset_name].has_key?(:full_size_filename) %>
+        <% asset_name = post[:content][:assets][asset_name][:full_size_filename] %>
+      <% else %>
+        <% asset_name = post[:content][:assets][asset_name][:filename] %>
+      <% end %>
+      <% image.attributes["src"].value = "/media/#{person[:name]}/Tumblr/#{post[:content][:username]}/#{asset_name}" %>
+      <% image.wrap("<a data-fancybox=\"tumblr_#{post[:content][:post_id]}\" href=\"/media/#{person[:name]}/Tumblr/#{post[:content][:username]}/#{asset_name}\">") %>
+    <% end %>
+  <% end %>
   <%= raw(body.to_html) %>
 <% elsif post[:type] == "tumblr_post-content--video" %>
-  <% text = x.css('tumblr post').text %>
-  <% begin %>
-    <% url = "https://ve.media.tumblr.com/" + Nokogiri::HTML.parse(x.css('video-player')[0].text).css('source').attribute('src').text.split('/')[-2] + '_480.mp4' %>
-    <video controls preload="metadata">
-      <source src="<%= url %>" />
-     </video>
-  <% rescue %>
-     video
+  <%= raw x.css('tumblr post video-caption').text %>
+  <% video = x.css('video-player:not([max-width])')[0].text %>
+  <% if x.css('video-source content-type')[0] #local media %>
+    <% if true %>
+      <% if video.include?('hdUrl":false') # low resolution %>
+        <% url = Nokogiri::HTML(video).css('source')[0].attribute('src').value %>
+      <% else # HD %>
+        <% url = video.split('hdUrl":"')[1].split('"')[0] %>
+      <% end %>
+
+      <% asset_name = "#{url.split('/')[-1].split('?')[0]}" %>
+      <% if post[:content][:assets] && post[:content][:assets][asset_name] %>
+        <video controls preload="metadata" poster="<%= "/media/#{person[:name]}/Tumblr/#{post[:content][:username]}/#{post[:content][:assets][asset_name][:poster]}" %>">
+          <source src="<%= "/media/#{person[:name]}/Tumblr/#{post[:content][:username]}/#{post[:content][:assets][asset_name][:filename]}" %>" type="video/mp4">
+         </video>
+      <% else %>
+        ??? video file asset missing (asset name: <%= asset_name %>)
+      <% end %>
+    <% end %>
+  <% else # embed from a different website %>
+    <%= raw x.css('video-player:not([max-width])')[0].text %>
   <% end %>
-<% elsif ["tumblr_post-content--chat", "tumblr_post-content--quote", "tumblr_post-content--iframe"].include?(post[:type]) %>
+<% elsif ["tumblr_post-content--iframe"].include?(post[:type]) %>
   <% text = x.css('tumblr post').text %>
   <%= raw(text) %>
   <%= post[:type] %>
+<% elsif post[:type] == "tumblr_post-content--quote" %>
+  <blockquote><%= x.css('tumblr post quote-text')[0].text %></blockquote>
+  <cite>-- <%= raw x.css('tumblr post quote-source')[0].text %></cite>
+<% elsif post[:type] == "tumblr_post-content--chat" %>
+  <% if x.css('tumblr post conversation-title')[0] %>
+    <h3><%= x.css('tumblr post conversation-title')[0].text %></h3>
+  <% end %>
+  <% x.css('tumblr post conversation line').each do |line| %>
+    <strong><%= line.attribute('name').value %>: </strong><span><%= line.text %></span><br />
+  <% end %>
+  
 <% elsif post[:type] == "tumblr_post-content--audio" %>
   <%= raw x.css('audio-caption')[0].text %>
   <figure>
@@ -51,7 +69,6 @@
   </figure>
   <br />
 <% elsif post[:type] == "tumblr_post-content--link" %>
-
   <% link = Nokogiri::HTML(x.css('tumblr post link-text').text) %>
   <a href="<%= x.css('tumblr post link-url').text %>"><%= raw link %></a>
 
@@ -82,9 +99,15 @@
   <% end %>
   <% last_photo = nil %>
   <% output.css('photo-url[max-width="1280"]').each do |photo| %>
-    <% if last_photo != photo.text.split('/')[-1] %>
-      <a data-fancybox="tumblr_<%= post[:content][:post_id] %>" href="/media/<%= person[:name] %>/Tumblr/<%= post[:content][:username] %>/<%= photo.text.split('/')[-1] %>">
-        <img src="/media/<%= person[:name] %>/Tumblr/<%= post[:content][:username] %>/<%= photo.text.split('/')[-1] %>" />
+    <% asset_name = "#{photo.text.split('/')[-1].split('?')[0]}" %>
+    <% if post[:content][:assets] && post[:content][:assets][asset_name] && last_photo != photo.text.split('/')[-1] %>
+      <% if post[:content][:assets][asset_name].has_key?(:full_size_filename) %>
+        <% asset_name = post[:content][:assets][asset_name][:full_size_filename] %>
+      <% else %>
+        <% asset_name = post[:content][:assets][asset_name][:filename] %>
+      <% end %>
+      <a data-fancybox="tumblr_<%= post[:content][:post_id] %>" href="/media/<%= person[:name] %>/Tumblr/<%= post[:content][:username] %>/<%= asset_name %>">
+        <img src="/media/<%= person[:name] %>/Tumblr/<%= post[:content][:username] %>/<%= asset_name %>" />
       </a>
       <% last_photo = photo.text.split('/')[-1] %>
     <% end %>
