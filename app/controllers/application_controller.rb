@@ -13,6 +13,8 @@ class ApplicationController < ActionController::Base
   "mamirc_event", "pidgin_message", "twitter_tweet", "twitter_reply", "twitter_retweet",
   "webcomics_strip", "youtube_video", "youtube_short"]
 
+  # This variable exists so that SocialLink's ERB views can be loaded directly into Hindsight
+  SOCIALLINK_BASE_MEDIA_URL = ''
 
   def auth
     if params[:key] == SocialLink::Application.credentials.auth_token
