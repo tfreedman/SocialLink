@@ -43,10 +43,6 @@
     <% else # embed from a different website %>
       <%= raw x.css('video-player:not([max-width])')[0].text %>
     <% end %>
-<% elsif post[:content][:post_type] == "post-content--iframe" %> 
-  <% text = x.css('tumblr post').text %>
-  <%= raw(text) %>
-  <%= post[:content][:post_type] %>
 <% elsif post[:content][:post_type] == "post-content--quote" %>
   <blockquote><%= x.css('tumblr post quote-text')[0].text %></blockquote>
   <cite>-- <%= raw x.css('tumblr post quote-source')[0].text %></cite>
