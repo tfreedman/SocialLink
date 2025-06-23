@@ -24,28 +24,25 @@
   <% end %>
   <%= raw(body.to_html) %>
 <% elsif post[:content][:post_type] == "post-content--video" %>
-  <%= raw x.css('tumblr post video-caption').text %>
-  <% video = x.css('video-player:not([max-width])')[0].text %>
-  <% if x.css('video-source content-type')[0] #local media %>
-    <% if true %>
+    <%= raw x.css('tumblr post video-caption').text %>
+    <% video = x.css('video-player:not([max-width])')[0].text %>
+    <% if x.css('video-source content-type')[0] #local media %>
       <% if video.include?('hdUrl":false') # low resolution %>
         <% url = Nokogiri::HTML(video).css('source')[0].attribute('src').value %>
       <% else # HD %>
         <% url = video.split('hdUrl":"')[1].split('"')[0] %>
       <% end %>
-
       <% asset_name = "#{url.split('/')[-1].split('?')[0]}" %>
       <% if post[:content][:assets] && post[:content][:assets][asset_name] %>
-        <video controls preload="metadata" poster="<%= media_path + post[:content][:assets][asset_name][:poster] %>">
-          <source src="<%= media_path + post[:content][:assets][asset_name][:filename] %>" type="video/mp4">
+        <video controls preload="metadata" poster="<%= media_path + post[:content][:assets][asset_name][:poster_filename] %>">
+          <source src="<%= media_path + post[:content][:assets][asset_name][:filename] %>" type="video/mp4" />
          </video>
       <% else %>
         ??? video file asset missing (asset name: <%= asset_name %>)
       <% end %>
+    <% else # embed from a different website %>
+      <%= raw x.css('video-player:not([max-width])')[0].text %>
     <% end %>
-  <% else # embed from a different website %>
-    <%= raw x.css('video-player:not([max-width])')[0].text %>
-  <% end %>
 <% elsif post[:content][:post_type] == "post-content--iframe" %> 
   <% text = x.css('tumblr post').text %>
   <%= raw(text) %>
