@@ -98,6 +98,10 @@ class ApplicationController < ActionController::Base
             ServiceNamePathCache.create(uid: uid, service: 'Facebook', name: vcard.fn.first.values[0], username: profile.value.split('facebook.com/')[1].split('/')[0], updated_at: start_time)
           elsif profile.value.include?("twitter.com/")
             ServiceNamePathCache.create(uid: uid, service: 'Twitter', name: vcard.fn.first.values[0], username: profile.value.split('twitter.com/')[1].split('/')[0], updated_at: start_time)
+          elsif profile.value.include?("bsky.app")
+            ServiceNamePathCache.create(uid: uid, service: 'Bluesky', name: vcard.fn.first.values[0], username: profile.value.split('bsky.app/profile/')[1], updated_at: start_time)
+          elsif profile.value.count('@') == 2
+            ServiceNamePathCache.create(uid: uid, service: 'Mastodon', name: vcard.fn.first.values[0], username: profile.value, updated_at: start_time)
           end
         end
       end
