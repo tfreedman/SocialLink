@@ -1,4 +1,5 @@
 class MastodonToot < ActiveRecord::Base
+  establish_connection :sociallink
   serialize :account
   serialize :media_attachments
   serialize :reblog
