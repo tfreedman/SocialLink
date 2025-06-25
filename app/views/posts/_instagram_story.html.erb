@@ -1,9 +1,15 @@
-<a data-fancybox="instagram_<%= post[:content][:filename] %>" href="/media/<%= @person[:name] %>/Instagram/<%= "#{post[:folder]} %28#{post[:content][:instagram_user_id]}%29" %>/<%= post[:content][:filename] %>">
+<% if defined?(snpc) # Used by Hindsight %>
+  <% media_path = ApplicationController::SOCIALLINK_BASE_MEDIA_URL + "/media/#{snpc.name}/Instagram/#{snpc.username}/" %>
+<% else # Used by SocialLink %>
+  <% media_path = ApplicationController::SOCIALLINK_BASE_MEDIA_URL + "/media/#{person[:name]}/Instagram/#{post[:folder]} %28#{post[:content][:instagram_user_id]}%29/" %>
+<% end %>
+
+<a data-fancybox="instagram_<%= post[:content][:filename] %>" href="<%= media_path + post[:content][:filename] %>">
   <% if ['webp', 'jpg', 'jpeg'].include?(post[:content][:filename].split('.')[-1].downcase) %>
-    <img src="/media/<%= @person[:name] %>/Instagram/<%= "#{post[:folder]} %28#{post[:content][:instagram_user_id]}%29" %>/<%= post[:content][:filename] %>" />
+    <img src="<%= media_path + post[:content][:filename] %>" />
   <% elsif post[:content][:filename].split('.')[-1].downcase == "mp4" %>
     <video controls preload="metadata">
-      <source src="/media/<%= @person[:name] %>/Instagram/<%= "#{post[:folder]} %28#{post[:content][:instagram_user_id]}%29" %>/<%= post[:content][:filename] %>" />
+      <source src="<%= media_path + post[:content][:filename] %>" />
     </video>
   <% end %>
 </a>

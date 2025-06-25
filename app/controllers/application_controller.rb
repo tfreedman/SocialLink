@@ -82,7 +82,7 @@ class ApplicationController < ActionController::Base
           elsif profile.value.include?("instagram.com/")
             ig = InstagramAccount.where(username: profile.value.split('instagram.com/')[1].split('/')[0]).first
             if ig
-              ServiceNamePathCache.create(uid: uid, service: 'Instagram', name: vcard.fn.first.values[0], username: ig.instagram_id, updated_at: start_time)
+              ServiceNamePathCache.create(uid: uid, service: 'Instagram', name: vcard.fn.first.values[0], username: "#{ig.username} (#{ig.instagram_id})", updated_at: start_time)
             end
           elsif profile.value.include?("deviantart.com/")
             ServiceNamePathCache.create(uid: uid, service: 'DeviantArt', name: vcard.fn.first.values[0], username: profile.value.split('deviantart.com/')[1].split('/')[0].downcase, updated_at: start_time)
