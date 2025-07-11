@@ -1,20 +1,25 @@
 <% json = JSON.parse(post[:content][:payload]) %>
-<h2>
-  <% if json["url"] && !json["url"].nil? %>
-    <a href="<%= json['url'] %>"><%= json["title"] %></a>
-  <% else %>
-    <%= json["title"] %>
-  <% end %>
-</h2>
+<% if defined?(snpc) # Used by Hindsight %>
+  <% media_path = ApplicationController::SOCIALLINK_BASE_MEDIA_URL + "/media/#{snpc.name}/Webcomic/#{snpc.username}/" %>
+<% else # Used by SocialLink %>
+  <% media_path = ApplicationController::SOCIALLINK_BASE_MEDIA_URL + "/media/#{person[:name]}/Webcomic/#{post[:content][:comic]}/" %>
+  <h2>
+    <% if json["url"] && !json["url"].nil? %>
+      <a href="<%= json['url'] %>"><%= json["title"] %></a>
+    <% else %>
+      <%= json["title"] %>
+    <% end %>
+  </h2>
+<% end %>
 
 <% if post[:content][:filename] %>
   <% post[:content][:filename].each do |file| %>
-  <a data-fancybox="webcomics_strip_<%= file %>" href="/media/<%= person[:name] %>/Webcomic/<%= post[:content][:comic] %>/<%= file %>">
-    <img src="/media/<%= person[:name] %>/Webcomic/<%= post[:content][:comic] %>/<%= file %>" />
+  <a data-fancybox="webcomics_strip_<%= file %>" href="<%= media_path + file %>">
+    <img src="<%= media_path + file %>" />
   </a>
   <% end %>
 <% end %>
 
 <% if json && json["alt"] %>
-  <em><%= json['alt'] %></em>
+  <p class="neutral"><em><%= json['alt'] %></em></p>
 <% end %>
