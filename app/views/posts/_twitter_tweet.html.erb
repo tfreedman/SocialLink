@@ -2,6 +2,12 @@
 <% tweets << post[:content] %>
 <% base_ta = TwitterAccount.where(user_id: tweets[0][:user_id]).first %>
 
+<% if defined?(snpc) # Used by Hindsight %>
+  <% media_path = ApplicationController::SOCIALLINK_BASE_MEDIA_URL + "/media/#{snpc.name}/Twitter/#{snpc.username}/" %>
+<% else # Used by SocialLink %>
+  <% media_path = ApplicationController::SOCIALLINK_BASE_MEDIA_URL + "/media/#{person[:name]}/Twitter/#{base_ta.username}/" %>
+<% end %>
+
 <% continue = true %>
 <% while continue %>
   <% if tweets[-1].reply_data %>
@@ -65,13 +71,13 @@
               <% if photo.class == Hash %>
                 <% photo['URL'] = photo[:URL] if photo[:URL] %>
                 <% if photo['URL'].class == String %>
-                  <a href="/media/<%= person[:name] %>/Twitter/<%= base_ta.username %>/<%= photo['URL'].split('/')[-1].split('.')[0] %>-orig.<%= photo['URL'].split('/')[-1].split('.')[1] %>" data-fancybox="twitter_<%= tweet[:tweet_id] %>">
-                    <img src="/media/<%= person[:name] %>/Twitter/<%= base_ta.username %>/<%= photo['URL'].split('/')[-1].split('.')[0] %>-orig.<%= photo['URL'].split('/')[-1].split('.')[1] %>" class="still-image" />
+                  <a href="<%= media_path + photo['URL'].split('/')[-1].split('.')[0] + '-orig.' + photo['URL'].split('/')[-1].split('.')[1] %>" data-fancybox="twitter_<%= tweet[:tweet_id] %>">
+                    <img src="<%= media_path + photo['URL'].split('/')[-1].split('.')[0] + '-orig.' + photo['URL'].split('/')[-1].split('.')[1] %>" class="still-image" />
                   </a>
                 <% end %>
               <% else %>
-                <a href="/media/<%= person[:name] %>/Twitter/<%= base_ta.username %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" data-fancybox="twitter_<%= tweet[:tweet_id] %>">
-                  <img src="/media/<%= person[:name] %>/Twitter/<%= base_ta.username %>/<%= photo.split('/')[-1].split('.')[0] %>-orig.<%= photo.split('/')[-1].split('.')[1] %>" class="still-image" />
+                <a href="<%= media_path + photo.split('/')[-1].split('.')[0] + '-orig.' + photo.split('/')[-1].split('.')[1] %>" data-fancybox="twitter_<%= tweet[:tweet_id] %>">
+                  <img src="<%= media_path + photo.split('/')[-1].split('.')[0] + '-orig.' + photo.split('/')[-1].split('.')[1] %>" class="still-image" />
                 </a>
               <% end %>
             </div>
@@ -83,9 +89,9 @@
     <% videos.each do |v| %>
       <% video = v["URL"] %>
       <% next if video.nil? %>
-      <a href="/media/<%= person[:name] %>/Twitter/<%= base_ta.username %>/<%= video.split('/')[-1].split('.')[0] %>.<%= video.split('/')[-1].split('.')[1].split('?')[0] %>" data-fancybox="twitter_<%= tweet[:tweet_id] %>">
+      <a href="<%= media_path + video.split('/')[-1].split('.')[0] + '.' + video.split('/')[-1].split('.')[1].split('?')[0] %>" data-fancybox="twitter_<%= tweet[:tweet_id] %>">
         <video controls>
-          <source src="/media/<%= person[:name] %>/Twitter/<%= base_ta.username %>/<%= video.split('/')[-1].split('.')[0] %>.<%= video.split('/')[-1].split('.')[1].split('?')[0] %>">
+          <source src="<%= media_path + video.split('/')[-1].split('.')[0] + '.' + video.split('/')[-1].split('.')[1].split('?')[0] %>">
         </video>
       </a>
     <% end %>
