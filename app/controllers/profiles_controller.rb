@@ -575,7 +575,7 @@ class ProfilesController < ApplicationController
           last_timestamps['instagram_post'] = []
           instagram_posts.each do |i|
             if i.json # Hack
-              posts << {sort_time: i.timestamp, type: 'instagram_post', content: i}
+              posts << {sort_time: i.timestamp, type: 'instagram_post', folder: InstagramAccount.where(instagram_id: i.instagram_user_id).first.username, content: i}
               last_timestamps['instagram_post'] << i.timestamp
             end
           end

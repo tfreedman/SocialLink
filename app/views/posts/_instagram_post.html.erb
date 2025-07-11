@@ -1,11 +1,16 @@
 <% json = JSON.parse(post[:content][:json]) %>
-<h2>
-  <% if json['__typename'] == 'GraphSidecar' %>
-    <span style="float: right">
-       <a data-fancybox-trigger="instagram_<%= post[:content][:shortcode] %>"><i class="fas fa-layer-group"></i> <%= json["edge_sidecar_to_children"]["edges"].count %></a>
-    </span>
-  <% end %>
-</h2>
+<% if defined?(snpc) # Used by Hindsight %>
+  <% media_path = ApplicationController::SOCIALLINK_BASE_MEDIA_URL + "/media/#{snpc.name}/Instagram/#{snpc.username}/" %>
+<% else # Used by SocialLink %>
+  <% media_path = ApplicationController::SOCIALLINK_BASE_MEDIA_URL + "/media/#{person[:name]}/Instagram/#{post[:folder]} %28#{post[:content][:instagram_user_id]}%29/" %>
+  <h2>
+    <% if json['__typename'] == 'GraphSidecar' %>
+      <span style="float: right">
+         <a data-fancybox-trigger="instagram_<%= post[:content][:shortcode] %>"><i class="fas fa-layer-group"></i> <%= json["edge_sidecar_to_children"]["edges"].count %></a>
+      </span>
+    <% end %>
+  </h2>
+<% end %>
 <% node = 0 %>
 <% loop do %>
   <% if json['__typename'] == 'GraphSidecar' %>
@@ -32,14 +37,13 @@
 
   <% if media_url && account %>
     <% media_name = media_url.split('/')[-1].split('?')[0] %>
-    <% folder = "#{account.username} %28#{account['instagram_id']}%29" %>
     <% if media_url %>
-      <a data-fancybox="instagram_<%= post[:content][:shortcode] %>" href="/media/<%= @person[:name] %>/Instagram/<%= folder %>/<%= media_name %>">
+      <a data-fancybox="instagram_<%= post[:content][:shortcode] %>" href="<%= media_path + media_name %>">
         <% if media_type == 'image' %>
-          <img src="/media/<%= @person[:name] %>/Instagram/<%= folder %>/<%= media_name %>" <% if node > 0 %>loading="lazy" style="display: none"<% end %> />
+          <img src="<%= media_path + media_name %>" <% if node > 0 %>loading="lazy" style="display: none"<% end %> />
         <% elsif media_type == 'video' %>
           <video controls preload="metadata" <% if node > 0 %>style="display: none"<% end %>>
-            <source src="/media/<%= @person[:name] %>/Instagram/<%= folder %>/<%= media_name %>"/>
+            <source src="<%= media_path +  media_name %>"/>
           </video>
         <% end %>
       </a>
