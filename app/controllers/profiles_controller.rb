@@ -353,6 +353,10 @@ class ProfilesController < ApplicationController
             sms_messages = AndroidSms.where(address: phone_numbers).or(AndroidSms.where(contact_name: vcard.fn.first.values[0])).order('date DESC').all
           end
 
+          if filters["types"].nil? || (filters["types"] && filters["types"].include?("voipms_sms"))
+            voipms_sms_messages = VoipmsSms.where(contact: phone_numbers).or(VoipmsSms.where(real_name: vcard.fn.first.values[0])).order('date DESC').all
+          end
+
           if filters["types"].nil? || (filters["types"] && filters["types"].include?("windows_phone_sms"))
             windows_phone_sms_messages = WindowsPhoneSms.where(real_name: vcard.fn.first.values[0]).order('timestamp DESC').all
           end
@@ -418,6 +422,14 @@ class ProfilesController < ApplicationController
             matrix_events.each do |m|
               posts << {sort_time: m.origin_server_ts / 1000, type: 'matrix_event', content: m}
               last_timestamps['matrix_event'] << m.origin_server_ts / 1000
+            end
+          end
+
+          if voipms_sms_messages
+            last_timestamps['voipms_sms'] = []
+            voipms_sms_messages.each do |v|
+              posts << {sort_time: v.date.to_i, type: 'voipms_sms', content: v}
+              last_timestamps['voipms_sms'] << v.date
             end
           end
 

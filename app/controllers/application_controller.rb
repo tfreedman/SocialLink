@@ -11,7 +11,7 @@ class ApplicationController < ActionController::Base
   "tumblr_post-content--chat", "tumblr_post-content--link", "tumblr_post-content--quote",
   "pixiv_post", "matrix_event", "windows_phone_sms", "reddit_comment",
   "mamirc_event", "pidgin_message", "twitter_tweet", "twitter_reply", "twitter_retweet",
-  "webcomics_strip", "youtube_video", "youtube_short"]
+  "voipms_sms", "webcomics_strip", "youtube_video", "youtube_short"]
 
   # This variable exists so that SocialLink's ERB views can be loaded directly into Hindsight
   SOCIALLINK_BASE_MEDIA_URL = ''
@@ -166,7 +166,7 @@ class ApplicationController < ActionController::Base
           # SocialLink is not a chat client. It should not have new notifications for a person based on chat logs that just came in.
           # However, it shouldn't sort someone as "last updated X years ago" if they talk to you daily. To solve this, we separate
           # last DB row insertion (last_updated) from last unseen thing (last_notification_activity)
-          next if [nil, "matrix_event", "android_sms", "mamirc_event", "facebook_message"].include?(key)
+          next if [nil, "matrix_event", "android_sms", "android_mms", "voipms_sms", "mamirc_event", "facebook_message"].include?(key)
 
           # Finally, we also filter out things that we currently view by browsing their respective websites, where SocialLink does
           # not currently fully replace browsing it. We shouldn't get notifications for things we've already seen elsewhere.
