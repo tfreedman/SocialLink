@@ -9,4 +9,5 @@ class MastodonToot < ActiveRecord::Base
   serialize :mentions
   serialize :tags
   serialize :emojis
+  serialize :assets
 end
