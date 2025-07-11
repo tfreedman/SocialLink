@@ -175,7 +175,7 @@
       <% elsif post[:type] == "deviantart_post" %>
         <%= render :partial => 'posts/deviantart_post' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "pixiv_post" %>
-        <%= render :partial => 'posts/pixiv' , locals: {post: post, person: @person} %>
+        <%= render :partial => 'posts/pixiv_post' , locals: {post: post, person: @person} %>
       <% else %>
         <%= post[:type] %>
       <% end %>
