@@ -1,5 +1,10 @@
 <% json = JSON.parse(post[:content][:json_dump]) %>
-<h2><a href="https://www.deviantart.com/<%= post[:content][:username] %>/art/<%= post[:content][:post_id] %>"><%= json["title"] %></a></h2>
-<a data-fancybox="deviantart_<%= post[:content][:filename] %>" href="/media/<%= person[:name] %>/DeviantArt/<%= post[:content][:username] %>/<%= post[:content][:filename] %>" />
-  <img src="/media/<%= person[:name] %>/DeviantArt/<%= post[:content][:username] %>/<%= post[:content][:filename] %>" />
+<% if defined?(snpc) # Used by Hindsight %>
+  <% media_path = ApplicationController::SOCIALLINK_BASE_MEDIA_URL + "/media/#{snpc.name}/DeviantArt/#{snpc.username}/" %>
+<% else # Used by SocialLink %>
+  <% media_path = ApplicationController::SOCIALLINK_BASE_MEDIA_URL + "/media/#{person[:name]}/DeviantArt/#{post[:content][:username]}/" %>
+  <h2><a href="https://www.deviantart.com/<%= post[:content][:username] %>/art/<%= post[:content][:post_id] %>"><%= json["title"] %></a></h2>
+<% end %>
+<a data-fancybox="deviantart_<%= post[:content][:filename] %>" href="<%= media_path + post[:content][:filename] %>" />
+  <img src="<%= media_path + post[:content][:filename] %>" />
 </a>
