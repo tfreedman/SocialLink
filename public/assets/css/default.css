@@ -71,17 +71,16 @@ body.index {
   }
   
   .fa-circle-user {
-    font-size: 192px;
-    line-height: 0.985em;
+    font-size: 186px;
   }
   
   .info {
     display: inline-block;
     vertical-align: top;
-  
+    a {text-decoration: none}
     h1 {margin-bottom: 0; margin-top: 10px}
     .icons {  
-      a {color: #001533}
+      a {color: #001533; text-decoration: none}
       svg {
         &.hangouts {width: 35px; height: 35px; position: relative; top: 8px}
         &.element {position: relative; top: 4px; width: 24px; height: 29px}
@@ -93,7 +92,7 @@ body.index {
     }
   }
   
-  h1 {display: inline-block; vertical-align: middle}
+  h1 {vertical-align: middle}
 }
   
 section > a > svg.fa-angle-left {font-size: 40px}

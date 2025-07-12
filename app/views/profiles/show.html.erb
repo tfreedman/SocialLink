@@ -33,10 +33,14 @@
               
             </style>
             <% if @person[:name].start_with?('#') %>
-              <i class="fas fa-user-circle"></i>
+              <div class="photo">
+                <i class="fas fa-user-circle"></i>
+              </div>
             <% else %>
               <% #TODO: GROUP IMAGE %>
-              <i class="fas fa-user-circle"></i>
+              <div class="photo">
+                <i class="fas fa-user-circle"></i>
+              </div>
             <% end %>
           <% end %>
         </a>
