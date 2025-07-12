@@ -201,6 +201,7 @@ section > a > svg.fa-angle-left {font-size: 40px}
           }
           .pixiv, .element, .colloquy, .mamirc, .pidgin {width: 24px; margin-left: 5px}
           .youtube-shorts {width: 15px; margin-left: 5px}
+          .google-chat {width: 15px; margin-left: 5px; filter: grayscale(100%);}
           .fa-deviantart {margin-left: 10px}
           .ao3 {width: 24px}
         }

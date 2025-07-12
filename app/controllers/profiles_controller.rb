@@ -365,6 +365,10 @@ class ProfilesController < ApplicationController
             facebook_messages = FacebookMessage.where(room_id: FacebookRoom.where(uid: uid).pluck(:room_id)).all
           end
 
+          if filters["types"].nil? || (filters["types"] && filters["types"].include?("google_chat_message"))
+            google_chat_messages = GoogleChatMessage.where(room: vcard.fn.first.values[0], enabled: true).order('created_date DESC').all
+          end
+
           if vcard.fn.first.values[0].start_with?('#') # Group Chat
             room_name = vcard.fn.first.values[0][1..-1]
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("mamirc_event"))
@@ -422,6 +426,14 @@ class ProfilesController < ApplicationController
             matrix_events.each do |m|
               posts << {sort_time: m.origin_server_ts / 1000, type: 'matrix_event', content: m}
               last_timestamps['matrix_event'] << m.origin_server_ts / 1000
+            end
+          end
+
+          if google_chat_messages
+            last_timestamps['google_chat_message'] = []
+            google_chat_messages.each do |g|
+              posts << {sort_time: g.created_date, type: 'google_chat_message', content: g}
+              last_timestamps['google_chat_message'] << g.created_date
             end
           end
 

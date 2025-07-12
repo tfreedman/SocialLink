@@ -5,7 +5,7 @@ class ApplicationController < ActionController::Base
 
   SUPPORTED_TYPES = ["android_mms", "android_sms", "ao3_work", "bluesky_post", "colloquy_message", "deviantart_post",
   "facebook_message", "facebook_post", "facebook_photo", "facebook_photo_of",
-  "facebook_album", "hangouts_event", "instagram_post", "instagram_story", "mastodon_toot", "mastodon_retoot",
+  "facebook_album", "google_chat_message", "hangouts_event", "instagram_post", "instagram_story", "mastodon_toot", "mastodon_retoot",
   "tumblr_post-content--photo", "tumblr_post-content--video", "tumblr_post-content--audio",
   "tumblr_post-content--text", "tumblr_post-content--answer", "tumblr_post-content--iframe",
   "tumblr_post-content--chat", "tumblr_post-content--link", "tumblr_post-content--quote",
@@ -166,7 +166,7 @@ class ApplicationController < ActionController::Base
           # SocialLink is not a chat client. It should not have new notifications for a person based on chat logs that just came in.
           # However, it shouldn't sort someone as "last updated X years ago" if they talk to you daily. To solve this, we separate
           # last DB row insertion (last_updated) from last unseen thing (last_notification_activity)
-          next if [nil, "matrix_event", "android_sms", "android_mms", "voipms_sms", "mamirc_event", "facebook_message"].include?(key)
+          next if [nil, "google_chat_message", "matrix_event", "android_sms", "android_mms", "voipms_sms", "mamirc_event", "facebook_message"].include?(key)
 
           # Finally, we also filter out things that we currently view by browsing their respective websites, where SocialLink does
           # not currently fully replace browsing it. We shouldn't get notifications for things we've already seen elsewhere.
