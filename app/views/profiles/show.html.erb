@@ -65,6 +65,8 @@
                   <a href="<%= account[:url] %>"><i class="fab fa-bluesky"></i></a>
                 <% elsif account[:service] == "deviantart" %>
                   <a href="<%= account[:url] %>"><i class="fab fa-deviantart"></i></a>
+                <% elsif account[:service] == "discord" %>
+                  <a href="<%= account[:url] %>"><i class="fab fa-discord"></i></a>
                 <% elsif account[:service] == "facebook" %>
                   <a href="<%= account[:url] %>"><i class="fab fa-facebook"></i></a>
                 <% elsif account[:service] == "instagram" %>
@@ -321,6 +323,18 @@
                   <input autocomplete="off" type="checkbox" <%= @filters.include?('youtube_short') ? 'checked' : '' %> id="youtube_short"/> <label for="youtube_short">Shorts (<%= @timeline[:service_counts]['youtube_short'] || 0 %>)</label>
                 </li>
               <% end %>
+            </ul>
+          </li>
+        <% end %>
+
+        <% if @timeline[:service_counts]['discord_message'] %>
+          <li>
+            <strong>Discord:</strong>
+            <ul>
+              <li data-service="discord_message">
+                <input autocomplete="off" type="checkbox" <%= @filters.include?('discord_message') ? 'checked' : '' %> id="discord_message"/> <label for="discord_message">Messages (<%= @timeline[:service_counts]['discord_message'] || 0 %>)</label>
+              </li>
+              <br />
             </ul>
           </li>
         <% end %>

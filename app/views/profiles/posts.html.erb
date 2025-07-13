@@ -73,9 +73,11 @@
           <i class="fab fa-android"></i>
         <% elsif post[:type] == "voipms_sms"%>
           <i class="fas fa-network-wired"></i>
-        <% elsif post[:type] == "windows_phone_sms" %>
+       <% elsif post[:type] == "windows_phone_sms" %>
           <i class="fab fa-windows"></i>
         <% end %>
+      <% elsif post[:type] == "discord_message" %>
+        <i class="fab fa-discord"></i>
       <% elsif ['facebook_photo', 'facebook_photo_of', 'facebook_post', 'facebook_album'].include?(post[:type]) %>
         <a href="https://facebook.com/<%= post[:content][:fbid] %>">
           <i class="fab fa-facebook"></i>
@@ -137,6 +139,8 @@
         <%= render :partial => 'posts/ao3_work' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "bluesky_post" %>
         <%= render :partial => 'posts/bluesky_post' , locals: {post: post, person: @person, record: nil} %>
+      <% elsif post[:type] == "discord_message" %>
+        <%= render :partial => 'posts/discord_message' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "matrix_event" %>
         <%= render :partial => 'posts/matrix_event' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "pidgin_message" %>

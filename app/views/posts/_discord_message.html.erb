@@ -1,0 +1,29 @@
+<% media_path = ApplicationController::SOCIALLINK_BASE_MEDIA_URL + "/media/Discord/" %>
+
+<p class="<% if post[:content][:author_id] != SocialLink::Application.credentials.discord_id %>sent<% else %>received<% end %>">
+  <% if person[:name].start_with?('#') # Group Chat %>
+    <% if post[:content][:author_id] != SocialLink::Application.credentials.discord_id %>
+      <small class="sender"><%= post[:content].user.name %>: </small>
+      <br />
+    <% end %>
+  <% end %>
+  <% if post[:content].attachments.count > 0 %>
+    <% post[:content].attachments.each do |a| %>
+      <% if ['jpg', 'jpeg', 'png', 'webp', 'gif'].include?(a["url"].split('.')[-1].downcase) %>
+        <a data-fancybox="discord_message_<%= post[:content][:discord_id] %>" href='<%= media_path + a["url"] %>'>
+          <img src='<%= media_path + a["url"] %>' />
+        </a>
+      <% else %>
+        Mystery Attachment?
+      <% end %>
+    <% end %>
+  <% else %>
+    <% if post[:content].inline_emojis.count > 0 %>
+      <% post[:content].inline_emojis.each do |emoji| %>
+        <% emoji_html = '<img style="width: 48px !important; display: inline !important" src="' + media_path + emoji['imageUrl'].gsub('\\', '/') + '" />' %>
+        <% post[:content]["content"].gsub!(':' + emoji['name'] + ':', emoji_html) %>
+      <% end %>
+    <% end %>
+    <%= raw post[:content]["content"] %>
+  <% end %>
+</p>

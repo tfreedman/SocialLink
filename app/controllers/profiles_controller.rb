@@ -77,6 +77,7 @@ class ProfilesController < ApplicationController
         ao3_accounts = []
         webcomics = []
         accounts = []
+        discord_guilds = []
 
         if vcard.field('x-socialprofile')
           vcard.field('x-socialprofile').each do |profile|
@@ -92,6 +93,9 @@ class ProfilesController < ApplicationController
             elsif profile.value.include?("reddit.com/user/") || profile.value.include?("reddit.com/u/")
               accounts << {service: 'reddit', url: profile.value}
               reddit_accounts << profile.value.split('/')[-1]
+            elsif profile.value.include?("discord.com/channels/")
+              accounts << {service: 'discord', url: profile.value}
+              discord_guilds << profile.value.split('discord.com/channels/')[1].split('/')[0].to_i
             elsif profile.value.include?("instagram.com/")
               accounts << {service: 'instagram', url: profile.value}
               ig = InstagramAccount.where(username: profile.value.split('instagram.com/')[1].split('/')[0]).first
@@ -386,6 +390,16 @@ class ProfilesController < ApplicationController
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("pidgin_message"))
               pidgin_messages = PidginMessage.where(enabled: true, real_sender: room_name).or(PidginMessage.where(enabled: true, real_receiver: room_name)).order('timestamp DESC').all
             end
+
+
+            if filters["types"].nil? || (filters["types"] && filters["types"].include?("discord_message"))
+              discord_channels = []
+              DiscordChannel.where(guild_id: discord_guilds).find_each do |c|
+                discord_channels << c.channel_id.to_s                
+              end
+
+              discord_messages = DiscordMessage.where(discord_channel_id: discord_channels).order('timestamp DESC').all
+            end
           
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("matrix_event"))
               matrix_rooms = MatrixRoom.where(enabled: [true, nil], name: room_name).pluck(:room_id)
@@ -426,6 +440,14 @@ class ProfilesController < ApplicationController
           if mamirc_events || colloquy_messages || mirc_logs
             if (mamirc_events && mamirc_events.count > 0) || (colloquy_messages && colloquy_messages.count > 0)
               accounts << {service: 'irc'}
+            end
+          end
+
+          if discord_messages
+            last_timestamps['discord_message'] = []
+            discord_messages.each do |m|
+              posts << {sort_time: m.timestamp.to_i, type: 'discord_message', content: m}
+              last_timestamps['discord_message'] << m.timestamp.to_i
             end
           end
 
