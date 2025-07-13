@@ -118,6 +118,8 @@
         <%= render :partial => 'profiles/colloquy' %>
       <% elsif post[:type] == "mamirc_event" %>
         <%= render :partial => 'profiles/mamirc' %>
+      <% elsif post[:type] == "mirc_log" %>
+        <%= render :partial => 'profiles/mirc' %>
       <% elsif post[:type] == "pidgin_message" %>
         <%= render :partial => 'profiles/pidgin' %>
       <% elsif post[:type] == "adium_message" %>
@@ -151,6 +153,8 @@
         <p class="<% if post[:content]['real_sender'] != SocialLink::Application.credentials.my_name %>sent<% else %>received<% end %>"><%= post[:content]["text"] %></p>
       <% elsif post[:type] == "mamirc_event" %>
         <%= render :partial => 'posts/mamirc_event' , locals: {post: post, person: @person} %>
+      <% elsif post[:type] == "mirc_log" %>
+        <%= render :partial => 'posts/mirc_log' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "colloquy_message" %>
         <%= render :partial => 'posts/colloquy_message' , locals: {post: post, person: @person} %>
       <% elsif post[:type] == "hangouts_event" %>

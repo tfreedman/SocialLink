@@ -1,0 +1,13 @@
+<% if person[:name].start_with?('#') # Group Chat %>
+  <p class="<% if post[:content][:real_sender] != SocialLink::Application.credentials.my_name %>sent<% else %>received<% end %>">
+    <% if post[:content][:real_sender] != SocialLink::Application.credentials.my_name %>
+      <small class="sender"><%= post[:content][:real_sender] || post[:content][:username] %>: </small>
+      <br />
+    <% end %>
+    <%= post[:content][:line] %>
+  </p>
+<% else # 1:1 Conversation %>
+  <p class="<% if post[:content][:real_sender] == person[:name] %>sent<% else %>received<% end %>">
+    <%= post[:content][:line] %>
+  </p>
+<% end %>
