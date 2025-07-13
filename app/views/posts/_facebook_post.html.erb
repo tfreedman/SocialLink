@@ -1,6 +1,17 @@
-<% if post[:content].authored_by %>
-  <strong><a href="https://facebook.com/<%= post[:content].authored_by.fbid %>"><%= post[:content].authored_by.payload[:display_name] %></a>: </strong>
+<% if defined?(snpc) # Used by Hindsight %>
+  <% media_path = ApplicationController::SOCIALLINK_BASE_MEDIA_URL + "/media/#{snpc.name}/Facebook/#{post[:content][:fb_account]}/" %>
+  <% comment_file = 'application/sociallink/facebook_comment' %>
+<% else # Used by SocialLink %>
+  <% media_path = ApplicationController::SOCIALLINK_BASE_MEDIA_URL + "/media/#{person[:name]}/Facebook/#{post[:content][:fb_account]}/" %>
+  <% comment_file = 'posts/facebook_comment' %>
 <% end %>
+
+<% if !defined?(snpc) %>
+  <% if post[:content].authored_by %>
+    <strong><a href="https://facebook.com/<%= post[:content].authored_by.fbid %>"><%= post[:content].authored_by.payload[:display_name] %></a>: </strong>
+  <% end %>
+<% end %>
+
 <% if post[:content][:payload] %>
   <% if post[:content][:payload][:caption] # Photos %>
       <%= raw(post[:content][:payload][:caption].gsub(/\@\[[0-9]*\]/) { |c|
@@ -44,16 +55,16 @@
     </h2>
     <% index = 0 %>
     <% FBID.where(fbid: photos_in_album).find_each do |fbid_obj| %>
-      <a data-fancybox="facebook_album_<%= post[:content][:fbid] %>" href="/media/<%= person[:name] %>/Facebook/<%= post[:content][:fb_account] %>/<%= fbid_obj.fbid %>.jpg" data-caption="<%= fbid_obj.payload[:caption] %>">
-        <img src="/media/<%= person[:name] %>/Facebook/<%= post[:content][:fb_account] %>/<%= fbid_obj.fbid %>.jpg" <% if index > 0 %>loading="lazy" style="display: none"<% end %>/>
+      <a data-fancybox="facebook_album_<%= post[:content][:fbid] %>" href="<%= media_path + fbid_obj.fbid %>.jpg" data-caption="<%= fbid_obj.payload[:caption] %>">
+        <img src="<%= media_path + fbid_obj.fbid %>.jpg" <% if index > 0 %>style="display: none"<% end %>/>
         <% index += 1 %>
       </a>
     <% end %>
   <% end %>
 <% end %>
-<% if ['facebook_photo', 'facebook_photo_of'].include?(post[:type]) %>
-  <a data-fancybox href="/media/<%= person[:name] %>/Facebook/<%= post[:content][:fb_account] %>/<%= post[:content][:fbid] %>.jpg">
-    <img src="/media/<%= person[:name] %>/Facebook/<%= post[:content][:fb_account] %>/<%= post[:content][:fbid] %>.jpg" />
+<% if ['photo', 'photo_of'].include?(post[:content][:fbid_type]) %>
+  <a data-fancybox href="<%= media_path + post[:content][:fbid] %>.jpg">
+    <img src="<%= media_path + post[:content][:fbid] %>.jpg" />
   </a>
 <% end %>
 <div class="cf">
@@ -62,6 +73,6 @@
 </div>
 <ul>
   <% post[:content].edge_comments.each do |edge| %>
-    <%= render "posts/facebook_comment", edge_object: FBID.where(fbid: edge.to).first %>
+    <%= render comment_file, edge_object: FBID.where(fbid: edge.to).first %>
   <% end %>
 </ul>
