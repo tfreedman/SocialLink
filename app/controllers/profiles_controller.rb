@@ -374,6 +374,10 @@ class ProfilesController < ApplicationController
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("mamirc_event"))
               mamirc_events = MamircEvent.where(real_sender: room_name).or(MamircEvent.where(real_receiver: room_name)).order('timestamp DESC').all
             end
+
+            if filters["types"].nil? || (filters["types"] && filters["types"].include?("mirc_log"))
+              mirc_logs = MircLog.where(room: vcard.fn.first.values[0]).or(MircLog.where(real_sender: vcard.fn.first.values[0])).order('timestamp DESC').all
+            end
   
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("colloquy_message"))
               colloquy_messages = ColloquyMessage.where(real_sender: room_name, enabled: true).or(ColloquyMessage.where(real_receiver: room_name, enabled: true)).order('timestamp DESC').all
@@ -406,6 +410,10 @@ class ProfilesController < ApplicationController
               mamirc_events = MamircEvent.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name).or(MamircEvent.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name)).order('timestamp DESC').all
             end
 
+            if filters["types"].nil? || (filters["types"] && filters["types"].include?("mirc_log"))
+              mirc_logs = MircLog.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name).or(MircLog.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name)).order('timestamp DESC').all
+            end
+
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("pidgin_message"))
               pidgin_messages = PidginMessage.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(PidginMessage.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
             end
@@ -415,7 +423,7 @@ class ProfilesController < ApplicationController
             end
           end
 
-          if mamirc_events || colloquy_messages
+          if mamirc_events || colloquy_messages || mirc_logs
             if (mamirc_events && mamirc_events.count > 0) || (colloquy_messages && colloquy_messages.count > 0)
               accounts << {service: 'irc'}
             end
@@ -474,6 +482,14 @@ class ProfilesController < ApplicationController
             mamirc_events.each do |m|
               posts << {sort_time: m.timestamp / 1000, type: 'mamirc_event', content: m}
               last_timestamps['mamirc_event'] << m.timestamp / 1000
+            end
+          end
+
+          if mirc_logs
+            last_timestamps['mirc_log'] = []
+            mirc_logs.each do |m|
+              posts << {sort_time: m.timestamp.to_i, type: 'mirc_log', content: m}
+              last_timestamps['mirc_log'] << m.timestamp.to_i
             end
           end
 
