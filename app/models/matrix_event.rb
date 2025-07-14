@@ -1,6 +1,8 @@
 class MatrixEvent < ActiveRecord::Base
   establish_connection :hindsight
 
+  attr_accessor :offset
+
   # SocialLink either needs all media on Matrix scraped locally, or it needs keys
   # to be able to generate media URLs on demand. If you run a homeserver,
   # this saves the need to download everything. Normal matrix users that don't
@@ -20,5 +22,9 @@ class MatrixEvent < ActiveRecord::Base
 
     token = [version].pack("C") + signature + message
     return Base64.urlsafe_encode64(token).gsub("=", "")
+  end
+
+  def timestamp
+    return (self.origin_server_ts / 1000).to_i + (self.offset || 0)
   end
 end
