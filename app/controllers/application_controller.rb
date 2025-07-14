@@ -3,15 +3,49 @@ class ApplicationController < ActionController::Base
   before_action :check_session_keys, except: [:update, :auth]
   before_action :service_name_path_cache_update
 
-  SUPPORTED_TYPES = ["android_mms", "android_sms", "ao3_work", "bluesky_post", "colloquy_message", "deviantart_post", "discord_message",
-  "facebook_message", "facebook_post", "facebook_photo", "facebook_photo_of",
-  "facebook_album", "google_chat_message", "hangouts_event", "instagram_post", "instagram_story", "mastodon_toot", "mastodon_retoot",
-  "tumblr_post-content--photo", "tumblr_post-content--video", "tumblr_post-content--audio",
-  "tumblr_post-content--text", "tumblr_post-content--answer", "tumblr_post-content--iframe",
-  "tumblr_post-content--chat", "tumblr_post-content--link", "tumblr_post-content--quote",
-  "pixiv_post", "matrix_event", "windows_phone_sms", "reddit_comment", "mirc_log",
-  "mamirc_event", "pidgin_message", "twitter_tweet", "twitter_reply", "twitter_retweet",
-  "voipms_sms", "webcomics_strip", "youtube_video", "youtube_short"]
+  SUPPORTED_TYPES = [
+    "android_mms",
+    "android_sms",
+    "ao3_work",
+    "bluesky_post",
+    "colloquy_message",
+    "deviantart_post",
+    "discord_message",
+    "facebook_message",
+    "facebook_post",
+    "facebook_photo",
+    "facebook_photo_of",
+    "facebook_album",
+    "google_chat_message",
+    "hangouts_event",
+    "instagram_post",
+    "instagram_story",
+    "mastodon_toot",
+    "mastodon_retoot",
+    "tumblr_post-content--photo",
+    "tumblr_post-content--video",
+    "tumblr_post-content--audio",
+    "tumblr_post-content--text",
+    "tumblr_post-content--answer",
+    "tumblr_post-content--iframe",
+    "tumblr_post-content--chat",
+    "tumblr_post-content--link",
+    "tumblr_post-content--quote",
+    "pixiv_post",
+    "matrix_event",
+    "windows_phone_sms",
+    "reddit_comment",
+    "mirc_log",
+    "mamirc_event",
+    "pidgin_message",
+    "twitter_tweet",
+    "twitter_reply",
+    "twitter_retweet",
+    "voipms_sms",
+    "webcomics_strip",
+    "youtube_video",
+    "youtube_short"
+  ]
 
   # This variable exists so that SocialLink's ERB views can be loaded directly into Hindsight
   SOCIALLINK_BASE_MEDIA_URL = ''
