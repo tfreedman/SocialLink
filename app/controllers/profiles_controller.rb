@@ -389,6 +389,12 @@ class ProfilesController < ApplicationController
               colloquy_messages = ColloquyMessage.where(real_sender: vcard.fn.first.values[0]).or(ColloquyMessage.where(real_receiver: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC').all
             end
 
+            # Not IRC - ignore the #
+            if filters["types"].nil? || (filters["types"] && filters["types"].include?("microsoft_teams_message"))
+              microsoft_teams_conversations = MicrosoftTeamsConversation.where(display_name: room_name).pluck(:conversation_id)
+              microsoft_teams_messages = MicrosoftTeamsMessage.where(conversation_id: microsoft_teams_conversations).order('original_arrival_time DESC').all
+            end
+
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("pidgin_message"))
               pidgin_messages = PidginMessage.where(enabled: true, real_sender: room_name).or(PidginMessage.where(enabled: true, real_receiver: room_name)).order('timestamp DESC').all
             end
@@ -425,6 +431,11 @@ class ProfilesController < ApplicationController
               mamirc_events = MamircEvent.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name).or(MamircEvent.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name)).order('timestamp DESC').all
             end
 
+            if filters["types"].nil? || (filters["types"] && filters["types"].include?("microsoft_teams_message"))
+              microsoft_teams_conversations = MicrosoftTeamsConversation.where(display_name: vcard.fn.first.values[0]).pluck(:conversation_id)
+              microsoft_teams_messages = MicrosoftTeamsMessage.where(conversation_id: microsoft_teams_conversations).order('original_arrival_time DESC').all
+            end
+
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("mirc_log"))
               mirc_logs = MircLog.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name).or(MircLog.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name)).order('timestamp DESC').all
             end
@@ -449,6 +460,14 @@ class ProfilesController < ApplicationController
             discord_messages.each do |m|
               posts << {sort_time: m.timestamp.to_i, type: 'discord_message', content: m}
               last_timestamps['discord_message'] << m.timestamp.to_i
+            end
+          end
+
+          if microsoft_teams_messages
+            last_timestamps['microsoft_teams_message'] = []
+            microsoft_teams_messages.each do |m|
+              posts << {sort_time: m.original_arrival_time.to_i, type: 'microsoft_teams_message', content: m}
+              last_timestamps['microsoft_teams_message'] << m.original_arrival_time.to_i
             end
           end
 

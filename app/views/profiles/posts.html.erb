@@ -120,6 +120,8 @@
         <%= render :partial => 'profiles/colloquy' %>
       <% elsif post[:type] == "mamirc_event" %>
         <%= render :partial => 'profiles/mamirc' %>
+      <% elsif post[:type] == "microsoft_teams_message" %>
+        <%= render :partial => 'profiles/ms_teams' %>
       <% elsif post[:type] == "mirc_log" %>
         <%= render :partial => 'profiles/mirc' %>
       <% elsif post[:type] == "pidgin_message" %>
@@ -133,7 +135,7 @@
     <div class="content">
       <% if ["youtube_video", "youtube_short"].include?(post[:type]) %>
         <%= render :partial => 'posts/youtube_video' , locals: {post: post, person: @person} %>
-      <% elsif ['adium_message', 'android_mms', 'android_sms', 'colloquy_message', 'facebook_message', 'google_chat_message', 'google_talk_message', 'hangouts_event', 'lounge_log', 'mamirc_event', 'mirc_log', 'pidgin_message', 'skype_message', 'voipms_sms', 'windows_phone_sms', 'xchat_log'].include?(post[:type]) %>
+      <% elsif ['adium_message', 'android_mms', 'android_sms', 'colloquy_message', 'facebook_message', 'google_chat_message', 'google_talk_message', 'hangouts_event', 'lounge_log', 'mamirc_event', 'microsoft_teams_message', 'mirc_log', 'pidgin_message', 'skype_message', 'voipms_sms', 'windows_phone_sms', 'xchat_log'].include?(post[:type]) %>
         <%= render :partial => 'posts/message' , locals: {event: post, person: @person} %>
       <% elsif post[:type] == "webcomics_strip" %>
         <%= render :partial => 'posts/webcomics_strip' , locals: {post: post, person: @person} %>
