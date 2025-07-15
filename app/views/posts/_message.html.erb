@@ -6,7 +6,7 @@
 <% elsif event[:type] == "android_mms" %>
   <% kind = :sent if event[:content][:sms_type] == "2" %>
   <% author = "#{event[:content][:contact_name]} (#{event[:content][:address]})" %>
-  <% message = event[:content][:body] %>
+  <% message = raw event[:content][:body] %>
 <% elsif event[:type] == "android_sms" %>
   <% kind = :sent if event[:content][:sms_type] == "2" %>
   <% author = "#{event[:content][:contact_name]} (#{event[:content][:address]})" %>
