@@ -203,6 +203,7 @@ section > a > svg.fa-angle-left {font-size: 40px}
           .ms-teams {width: 26px; height: 26px; margin-left: 5px}
           .element {width: 24px; margin-left: 5px; height: 24px}
           .google-chat {width: 15px; margin-left: 5px; filter: grayscale(100%);}
+          .xchat {width: 15px; height: 15px; margin-left: 5px; filter: grayscale(100%)}
           .fa-deviantart {margin-left: 10px}
           .ao3 {width: 24px}
         }

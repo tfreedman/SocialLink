@@ -45,6 +45,7 @@ class ApplicationController < ActionController::Base
     "voipms_sms",
     "windows_phone_sms",
     "webcomics_strip",
+    "xchat_log",
     "youtube_video",
     "youtube_short"
   ]

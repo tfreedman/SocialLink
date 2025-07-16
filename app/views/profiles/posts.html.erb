@@ -130,6 +130,8 @@
         <%= render :partial => 'profiles/pidgin' %>
       <% elsif post[:type] == "adium_message" %>
         Adium
+      <% elsif post[:type] == "xchat_log" %>
+        <%= render :partial => 'profiles/xchat' %>
       <% end %>
       <br />
       <small><%= timestamp.strftime('%H:%M') %></small>

@@ -13,7 +13,7 @@
   <% message = event[:content][:body] %>
 <% elsif event[:type].start_with?("colloquy_message") %>
   <% kind = :sent if event[:content][:real_sender] == real_name %>
-  <% author = event[:content][:from] %>
+  <% author = (event[:content][:real_sender] || event[:content][:from]) %>
   <% message = event[:content][:message] %>
 <% elsif event[:type].start_with?('facebook_message') %>
   <% kind = :sent if event[:content].room[:real_name] && (event[:content].room[:real_name] != event[:content][:sender_name]) %>
@@ -46,7 +46,7 @@
   <% end %>
 <% elsif event[:type].start_with?("mirc_log", "lounge_log", "xchat_log") %>
   <% kind = :sent if event[:content][:real_sender] == real_name %>
-  <% author = event[:content][:username] %>
+  <% author = (event[:content][:real_sender] || event[:content][:username]) %>
   <% message = event[:content][:line] %>
 <% elsif event[:type].start_with?('pidgin_message') %>
   <% kind = :sent if event[:content][:real_sender] == real_name %>

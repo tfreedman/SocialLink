@@ -385,6 +385,10 @@ class ProfilesController < ApplicationController
               mamirc_events = MamircEvent.where(real_sender: vcard.fn.first.values[0], enabled: true).or(MamircEvent.where(real_receiver: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC').all
             end
 
+            if filters["types"].nil? || (filters["types"] && filters["types"].include?("xchat_log"))
+              xchat_logs = XchatLog.where(room: vcard.fn.first.values[0], enabled: true).or(XchatLog.where(real_sender: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC').all
+            end
+
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("mirc_log"))
               mirc_logs = MircLog.where(room: vcard.fn.first.values[0], enabled: true).or(MircLog.where(real_sender: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC').all
             end
@@ -438,6 +442,10 @@ class ProfilesController < ApplicationController
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("microsoft_teams_message"))
               microsoft_teams_conversations = MicrosoftTeamsConversation.where(display_name: vcard.fn.first.values[0]).pluck(:conversation_id)
               microsoft_teams_messages = MicrosoftTeamsMessage.where(conversation_id: microsoft_teams_conversations, enabled: true).order('original_arrival_time DESC').all
+            end
+
+            if filters["types"].nil? || (filters["types"] && filters["types"].include?("xchat_log"))
+              xchat_logs = XchatLog.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(XchatLog.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("mirc_log"))
@@ -544,6 +552,14 @@ class ProfilesController < ApplicationController
             mirc_logs.each do |m|
               posts << {sort_time: m.timestamp.to_i, type: 'mirc_log', content: m}
               last_timestamps['mirc_log'] << m.timestamp.to_i
+            end
+          end
+
+          if xchat_logs
+            last_timestamps['xchat_log'] = []
+            xchat_logs.each do |x|
+              posts << {sort_time: x.timestamp.to_i, type: 'xchat_log', content: x}
+              last_timestamps['xchat_log'] << x.timestamp.to_i
             end
           end
 
