@@ -57,11 +57,11 @@
   <% author = event[:content][:author] %>
   <% message = raw event[:content][:body_xml] %>
 <% elsif event[:type] == "voipms_sms" %>
-  <% kind = :sent if event[:content][:sms_type] == "1" %>
+  <% kind = :sent if event[:content][:sms_type] == 0 %>
   <% author = "#{event[:content][:real_name]} (#{event[:content][:contact]})" %>
   <% message = event[:content][:message] %>
 <% elsif event[:type] == "windows_phone_sms" %>
-  <% kind = :sent if event[:content]['is_sent'] %>
+  <% kind = :sent if event[:content][:is_sent] %>
   <% author = "#{event[:content][:real_name]} (#{event[:content][:phone_number]})" %>
   <% message = event[:content]["body"] %>
 <% end %>
