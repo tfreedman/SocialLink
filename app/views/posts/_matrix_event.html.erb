@@ -2,9 +2,9 @@
 <% snpc = ServiceNamePathCache.where(service: 'Matrix', username: post[:content][:sender]).first %>
 <% name = (snpc && snpc.name) || nil %>
 <% if json["msgtype"] == 'm.text' %>
-  <p class="<% if name != SocialLink::Application.credentials.my_name %>sent<% else %>received<% end %>">
+  <p class="<% if name == SocialLink::Application.credentials.my_name %>sent<% else %>received<% end %>">
     <% if person[:name].start_with?('#') # Group Chat %>
-      <% if name != SocialLink::Application.credentials.my_name %>
+      <% if name == SocialLink::Application.credentials.my_name %>
         <small class="sender"><%= name || post[:content][:sender] %>: </small>
         <br />
       <% end %>
@@ -21,9 +21,9 @@
   </a>
   <p style="text-align: center"><em>(<a href="<%= SocialLink::Application.credentials.matrix_media_server %>/v1/media/download/<%= post[:content].get_media_token %>"><%= json["body"] %></a>)</em></p>
 <% elsif json["msgtype"] == 'm.emote' %>
-  <p class="<% if name != SocialLink::Application.credentials.my_name %>sent<% else %>received<% end %>">
+  <p class="<% if name == SocialLink::Application.credentials.my_name %>sent<% else %>received<% end %>">
     <% if person[:name].start_with?('#') # Group Chat %>
-      <% if name != SocialLink::Application.credentials.my_name %>
+      <% if name == SocialLink::Application.credentials.my_name %>
         <small class="sender"><%= name || post[:content][:sender] %>: </small>
         <br />
       <% end %>
