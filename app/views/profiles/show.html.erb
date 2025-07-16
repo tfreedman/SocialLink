@@ -342,7 +342,7 @@
         <% if (@timeline[:service_counts]['pixiv_post'].to_i + @timeline[:service_counts]['matrix_event'].to_i + @timeline[:service_counts]['android_mms'].to_i + @timeline[:service_counts]['android_sms'].to_i + @timeline[:service_counts]['ao3_work'].to_i +
           @timeline[:service_counts]['windows_phone_sms'].to_i + @timeline[:service_counts]['mamirc_event'].to_i + @timeline[:service_counts]['colloquy_message'].to_i + @timeline[:service_counts]['voipms_sms'].to_i + @timeline[:service_counts]['mirc_log'].to_i +
           @timeline[:service_counts]['pidgin_message'].to_i + @timeline[:service_counts]['deviantart_post'].to_i + @timeline[:service_counts]['hangouts_event'].to_i + @timeline[:service_counts]['google_chat_message'].to_i + @timeline[:service_counts]['google_talk_message'].to_i + 
-          @timeline[:service_counts]['microsoft_teams_message'].to_i + @timeline[:service_counts]['xchat_log'].to_i) > 0 %>
+          @timeline[:service_counts]['microsoft_teams_message'].to_i + @timeline[:service_counts]['xchat_log'].to_i + @timeline[:service_counts]['lounge_log'].to_i) > 0 %>
           <li>
             <strong>Other:</strong>
             <ul>
@@ -409,6 +409,12 @@
               <% if @timeline[:service_counts]['windows_phone_sms'] %>
                 <li data-service="windows_phone_sms">
                   <input autocomplete="off" type="checkbox" <%= @filters.include?('windows_phone_sms') ? 'checked' : '' %> id="windows_phone_sms"/> <label for="windows_phone_sms">SMS (WP7) (<%= @timeline[:service_counts]['windows_phone_sms'] || 0 %>)</label>
+                </li>
+              <% end %>
+
+              <% if @timeline[:service_counts]['lounge_log'] %>
+                <li data-service="lounge_log">
+                  <input autocomplete="off" type="checkbox" <%= @filters.include?('lounge_log') ? 'checked' : '' %> id="lounge_log"/> <label for="lounge_log">The Lounge (<%= @timeline[:service_counts]['lounge_log'] || 0 %>)</label>
                 </li>
               <% end %>
 

@@ -122,6 +122,8 @@
         <%= render :partial => 'profiles/colloquy' %>
       <% elsif post[:type] == "mamirc_event" %>
         <%= render :partial => 'profiles/mamirc' %>
+      <% elsif post[:type] == "lounge_log" %>
+        <%= render :partial => 'profiles/lounge' %>
       <% elsif post[:type] == "microsoft_teams_message" %>
         <%= render :partial => 'profiles/ms_teams' %>
       <% elsif post[:type] == "mirc_log" %>

@@ -21,6 +21,7 @@ class ApplicationController < ActionController::Base
     "hangouts_event",
     "instagram_post",
     "instagram_story",
+    "lounge_log",
     "mamirc_event",
     "mastodon_toot",
     "mastodon_retoot",

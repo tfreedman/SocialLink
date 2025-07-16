@@ -397,6 +397,10 @@ class ProfilesController < ApplicationController
               colloquy_messages = ColloquyMessage.where(real_sender: vcard.fn.first.values[0], enabled: true).or(ColloquyMessage.where(real_receiver: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC').all
             end
 
+            if filters["types"].nil? || (filters["types"] && filters["types"].include?("lounge_log"))
+              lounge_logs = LoungeLog.where(room: vcard.fn.first.values[0], enabled: true).or(LoungeLog.where(real_sender: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC').all
+            end
+
             # Not IRC - ignore the #
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("microsoft_teams_message"))
               microsoft_teams_conversations = MicrosoftTeamsConversation.where(display_name: room_name).pluck(:conversation_id)
@@ -448,6 +452,10 @@ class ProfilesController < ApplicationController
               xchat_logs = XchatLog.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(XchatLog.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
             end
 
+            if filters["types"].nil? || (filters["types"] && filters["types"].include?("lounge_log"))
+              lounge_logs = LoungeLog.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(LoungeLog.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
+            end
+
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("mirc_log"))
               mirc_logs = MircLog.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(MircLog.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
             end
@@ -461,7 +469,7 @@ class ProfilesController < ApplicationController
             end
           end
 
-          if mamirc_events || colloquy_messages || mirc_logs
+          if mamirc_events || colloquy_messages || mirc_logs || lounge_logs
             if (mamirc_events && mamirc_events.count > 0) || (colloquy_messages && colloquy_messages.count > 0)
               accounts << {service: 'irc'}
             end
@@ -536,6 +544,14 @@ class ProfilesController < ApplicationController
             colloquy_messages.each do |c|
               posts << {sort_time: c.timestamp, type: 'colloquy_message', content: c}
               last_timestamps['colloquy_message'] << c.timestamp
+            end
+          end
+
+          if lounge_logs
+            last_timestamps['lounge_log'] = []
+            lounge_logs.each do |l|
+              posts << {sort_time: l.timestamp.to_i, type: 'lounge_log', content: l}
+              last_timestamps['lounge_log'] << l.timestamp.to_i
             end
           end
 
