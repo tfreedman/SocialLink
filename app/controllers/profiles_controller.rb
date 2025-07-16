@@ -378,21 +378,21 @@ class ProfilesController < ApplicationController
             
             # This is IRC - room names start with a # anyhow.
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("mamirc_event"))
-              mamirc_events = MamircEvent.where(real_sender: vcard.fn.first.values[0]).or(MamircEvent.where(real_receiver: vcard.fn.first.values[0])).order('timestamp DESC').all
+              mamirc_events = MamircEvent.where(real_sender: vcard.fn.first.values[0], enabled: true).or(MamircEvent.where(real_receiver: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("mirc_log"))
-              mirc_logs = MircLog.where(room: vcard.fn.first.values[0]).or(MircLog.where(real_sender: vcard.fn.first.values[0])).order('timestamp DESC').all
+              mirc_logs = MircLog.where(room: vcard.fn.first.values[0], enabled: true).or(MircLog.where(real_sender: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC').all
             end
   
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("colloquy_message"))
-              colloquy_messages = ColloquyMessage.where(real_sender: vcard.fn.first.values[0]).or(ColloquyMessage.where(real_receiver: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC').all
+              colloquy_messages = ColloquyMessage.where(real_sender: vcard.fn.first.values[0], enabled: true).or(ColloquyMessage.where(real_receiver: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC').all
             end
 
             # Not IRC - ignore the #
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("microsoft_teams_message"))
               microsoft_teams_conversations = MicrosoftTeamsConversation.where(display_name: room_name).pluck(:conversation_id)
-              microsoft_teams_messages = MicrosoftTeamsMessage.where(conversation_id: microsoft_teams_conversations).order('original_arrival_time DESC').all
+              microsoft_teams_messages = MicrosoftTeamsMessage.where(conversation_id: microsoft_teams_conversations, enabled: true).order('original_arrival_time DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("pidgin_message"))
@@ -428,16 +428,16 @@ class ProfilesController < ApplicationController
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("mamirc_event"))
-              mamirc_events = MamircEvent.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name).or(MamircEvent.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name)).order('timestamp DESC').all
+              mamirc_events = MamircEvent.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(MamircEvent.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("microsoft_teams_message"))
               microsoft_teams_conversations = MicrosoftTeamsConversation.where(display_name: vcard.fn.first.values[0]).pluck(:conversation_id)
-              microsoft_teams_messages = MicrosoftTeamsMessage.where(conversation_id: microsoft_teams_conversations).order('original_arrival_time DESC').all
+              microsoft_teams_messages = MicrosoftTeamsMessage.where(conversation_id: microsoft_teams_conversations, enabled: true).order('original_arrival_time DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("mirc_log"))
-              mirc_logs = MircLog.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name).or(MircLog.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name)).order('timestamp DESC').all
+              mirc_logs = MircLog.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(MircLog.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("pidgin_message"))
@@ -581,7 +581,7 @@ class ProfilesController < ApplicationController
           end
   
           if filters["types"].nil? || (filters["types"] && filters["types"].include?("hangouts_event"))
-            hangouts_events = HangoutsEvent.where(conversation_id: hangouts_conversations).order('timestamp DESC').all
+            hangouts_events = HangoutsEvent.where(conversation_id: hangouts_conversations, enabled: true).order('timestamp DESC').all
           end
   
           if hangouts_events
