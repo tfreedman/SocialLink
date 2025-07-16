@@ -67,6 +67,8 @@
         </a>
       <% elsif post[:type] == "google_chat_message" %>
         <%= render :partial => 'profiles/google_chat' %>
+      <% elsif post[:type] == "google_talk_message" %>
+        <%= render :partial => 'profiles/google_chat' %> <!-- TODO -->
       <% elsif ['android_mms', 'android_sms', 'voipms_sms', 'windows_phone_sms'].include?(post[:type]) %>
         <i class="fas fa-sms"></i>
         <% if ['android_mms', 'android_sms'].include?(post[:type]) %>

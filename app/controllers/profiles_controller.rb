@@ -373,6 +373,10 @@ class ProfilesController < ApplicationController
             google_chat_messages = GoogleChatMessage.where(room: vcard.fn.first.values[0], enabled: true).order('created_date DESC').all
           end
 
+          if filters["types"].nil? || (filters["types"] && filters["types"].include?("google_talk_message"))
+            google_talk_messages = GoogleTalkMessage.where(room: vcard.fn.first.values[0], enabled: true).order('timestamp DESC').all
+          end
+
           if vcard.fn.first.values[0].start_with?('#') # Group Chat
             room_name = vcard.fn.first.values[0][1..-1]
             
@@ -476,6 +480,14 @@ class ProfilesController < ApplicationController
             matrix_events.each do |m|
               posts << {sort_time: m.origin_server_ts / 1000, type: 'matrix_event', content: m}
               last_timestamps['matrix_event'] << m.origin_server_ts / 1000
+            end
+          end
+
+          if google_talk_messages
+            last_timestamps['google_talk_message'] = []
+            google_talk_messages.each do |g|
+              posts << {sort_time: g.timestamp.to_i, type: 'google_talk_message', content: g}
+              last_timestamps['google_talk_message'] << g.timestamp.to_i
             end
           end
 

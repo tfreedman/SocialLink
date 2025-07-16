@@ -17,12 +17,19 @@ class ApplicationController < ActionController::Base
     "facebook_photo_of",
     "facebook_album",
     "google_chat_message",
+    "google_talk_message",
     "hangouts_event",
     "instagram_post",
     "instagram_story",
+    "mamirc_event",
     "mastodon_toot",
     "mastodon_retoot",
+    "matrix_event",
     "microsoft_teams_message",
+    "mirc_log",
+    "pidgin_message",
+    "pixiv_post",
+    "reddit_comment",
     "tumblr_post-content--photo",
     "tumblr_post-content--video",
     "tumblr_post-content--audio",
@@ -32,17 +39,11 @@ class ApplicationController < ActionController::Base
     "tumblr_post-content--chat",
     "tumblr_post-content--link",
     "tumblr_post-content--quote",
-    "pixiv_post",
-    "matrix_event",
-    "windows_phone_sms",
-    "reddit_comment",
-    "mirc_log",
-    "mamirc_event",
-    "pidgin_message",
     "twitter_tweet",
     "twitter_reply",
     "twitter_retweet",
     "voipms_sms",
+    "windows_phone_sms",
     "webcomics_strip",
     "youtube_video",
     "youtube_short"
@@ -216,4 +217,3 @@ class ApplicationController < ActionController::Base
     render plain: 'done'
   end
 end
-
