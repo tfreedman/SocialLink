@@ -134,6 +134,8 @@
         Adium
       <% elsif post[:type] == "xchat_log" %>
         <%= render :partial => 'profiles/xchat' %>
+      <% elsif post[:type] == "skype_message" %>
+        <%= render :partial => 'profiles/skype' %>
       <% end %>
       <br />
       <small><%= timestamp.strftime('%H:%M') %></small>

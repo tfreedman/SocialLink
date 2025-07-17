@@ -443,6 +443,10 @@ class ProfilesController < ApplicationController
               mamirc_events = MamircEvent.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(MamircEvent.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
             end
 
+            if filters["types"].nil? || (filters["types"] && filters["types"].include?("skype_message"))
+              skype_messages = SkypeMessage.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(SkypeMessage.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
+            end
+
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("microsoft_teams_message"))
               microsoft_teams_conversations = MicrosoftTeamsConversation.where(display_name: vcard.fn.first.values[0]).pluck(:conversation_id)
               microsoft_teams_messages = MicrosoftTeamsMessage.where(conversation_id: microsoft_teams_conversations, enabled: true).order('original_arrival_time DESC').all
@@ -480,6 +484,14 @@ class ProfilesController < ApplicationController
             discord_messages.each do |m|
               posts << {sort_time: m.timestamp.to_i, type: 'discord_message', content: m}
               last_timestamps['discord_message'] << m.timestamp.to_i
+            end
+          end
+
+          if skype_messages
+            last_timestamps['skype_message'] = []
+            skype_messages.each do |s|
+              posts << {sort_time: s.timestamp, type: 'skype_message', content: s}
+              last_timestamps['skype_message'] << s.timestamp
             end
           end
 

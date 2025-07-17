@@ -31,6 +31,7 @@ class ApplicationController < ActionController::Base
     "pidgin_message",
     "pixiv_post",
     "reddit_comment",
+    "skype_message",
     "tumblr_post-content--photo",
     "tumblr_post-content--video",
     "tumblr_post-content--audio",
