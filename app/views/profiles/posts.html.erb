@@ -31,7 +31,7 @@
       <% elsif post[:type] == "webcomics_strip" %>
         <i class="fas fa-book-reader"></i>
       <% elsif post[:type] == "hangouts_event" %>
-        <i class="fab fa-hangouts"></i>
+        <%= render :partial => 'profiles/hangouts' %>
       <% elsif ["youtube_video", "youtube_short"].include?(post[:type]) %>
         <a href="https://www.youtube.com/watch?v=<%= post[:content][:video_id] %>">
           <% if post[:type] == "youtube_video" %>
