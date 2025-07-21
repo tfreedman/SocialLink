@@ -1,12 +1,27 @@
+<% if !defined?(person) # Used by Hindsight %>
+  <% ma = MastodonAccount.where(user_id: post[:content][:user_id]).first %>
+  <% media_path = ApplicationController::SOCIALLINK_BASE_MEDIA_URL + "/media/#{person[:name]}/Mastodon/#{ma.username}/" %>
+<% else # Used by SocialLink %>
+  <% media_path = ApplicationController::SOCIALLINK_BASE_MEDIA_URL + "/media/#{snpc.name}/Mastodon/#{snpc.username}/" %>
+<% end %>
+
 <% if post[:content][:reblog].nil? %>
   <%= post[:content][:content].html_safe %>
   <% if post[:content][:media_attachments] %>
     <% post[:content][:media_attachments].each do |a| %>
       <% if a["type"] == 'image' %>
-        <img src="<%= a['url'] %>" />
+        <% if post[:content][:assets][a["id"]] %>
+          <img src="<%= media_path + post[:content][:assets][a['id']][:filename] %>" />
+        <% else %>
+          <img src="<%= a['url'] %>" />
+        <% end %>
       <% elsif a["type"] == 'video' || a["type"] == 'gifv' %>
         <video controls>
-          <source src="<%= a['url'] %>">
+          <% if post[:content][:assets][a["id"]] %>
+            <source src="<%= media_path + post[:content][:assets][a['id']][:filename] %>">
+          <% else %>
+            <source src="<%= a['url'] %>">
+          <% end %>
         </video>
       <% end %>
     <% end %>
