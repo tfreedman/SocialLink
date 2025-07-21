@@ -4,6 +4,7 @@ class ApplicationController < ActionController::Base
   before_action :service_name_path_cache_update
 
   SUPPORTED_TYPES = [
+    "adium_message",
     "android_mms",
     "android_sms",
     "ao3_work",

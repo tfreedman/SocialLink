@@ -407,6 +407,10 @@ class ProfilesController < ApplicationController
               microsoft_teams_messages = MicrosoftTeamsMessage.where(conversation_id: microsoft_teams_conversations, enabled: true).order('original_arrival_time DESC').all
             end
 
+            if filters["types"].nil? || (filters["types"] && filters["types"].include?("adium_message"))
+              adium_messages = AdiumMessage.where(enabled: true, real_sender: room_name).or(AdiumMessage.where(enabled: true, real_receiver: room_name)).order('timestamp DESC').all
+            end
+
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("pidgin_message"))
               pidgin_messages = PidginMessage.where(enabled: true, real_sender: room_name).or(PidginMessage.where(enabled: true, real_receiver: room_name)).order('timestamp DESC').all
             end
@@ -466,6 +470,10 @@ class ProfilesController < ApplicationController
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("pidgin_message"))
               pidgin_messages = PidginMessage.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(PidginMessage.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
+            end
+
+            if filters["types"].nil? || (filters["types"] && filters["types"].include?("adium_message"))
+              adium_messages = AdiumMessage.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(AdiumMessage.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("colloquy_message"))
@@ -540,6 +548,14 @@ class ProfilesController < ApplicationController
             windows_phone_sms_messages.each do |w|
               posts << {sort_time: w.timestamp, type: 'windows_phone_sms', content: w}
               last_timestamps['windows_phone_sms'] << w.timestamp
+            end
+          end
+
+          if adium_messages
+            last_timestamps['adium_message'] = []
+            adium_messages.each do |a|
+              posts << {sort_time: a.timestamp, type: 'adium_message', content: a}
+              last_timestamps['adium_message'] << a.timestamp
             end
           end
 
