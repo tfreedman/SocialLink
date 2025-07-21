@@ -4,7 +4,7 @@
 <% if json["msgtype"] == 'm.text' %>
   <p class="<% if name == SocialLink::Application.credentials.my_name %>sent<% else %>received<% end %>">
     <% if person[:name].start_with?('#') # Group Chat %>
-      <% if name == SocialLink::Application.credentials.my_name %>
+      <% if name != SocialLink::Application.credentials.my_name %>
         <small class="sender"><%= name || post[:content][:sender] %>: </small>
         <br />
       <% end %>
@@ -23,7 +23,7 @@
 <% elsif json["msgtype"] == 'm.emote' %>
   <p class="<% if name == SocialLink::Application.credentials.my_name %>sent<% else %>received<% end %>">
     <% if person[:name].start_with?('#') # Group Chat %>
-      <% if name == SocialLink::Application.credentials.my_name %>
+      <% if name != SocialLink::Application.credentials.my_name %>
         <small class="sender"><%= name || post[:content][:sender] %>: </small>
         <br />
       <% end %>
