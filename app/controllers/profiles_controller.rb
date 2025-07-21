@@ -350,19 +350,19 @@ class ProfilesController < ApplicationController
 
         if SocialLink::Application.credentials.hindsight_integration
           if filters["types"].nil? || (filters["types"] && filters["types"].include?("android_mms"))
-            mms_messages = AndroidMms.where(address: phone_numbers, enabled: true).or(AndroidMms.where(contact_name: vcard.fn.first.values[0], enabled: true)).order('date DESC').all
+            mms_messages = AndroidMms.where(address: phone_numbers, enabled: true).or(AndroidMms.where(contact_name: vcard.fn.first.values[0], enabled: true)).order('date DESC, id DESC').all
           end
 
           if filters["types"].nil? || (filters["types"] && filters["types"].include?("android_sms"))
-            sms_messages = AndroidSms.where(address: phone_numbers).or(AndroidSms.where(contact_name: vcard.fn.first.values[0])).order('date DESC').all
+            sms_messages = AndroidSms.where(address: phone_numbers).or(AndroidSms.where(contact_name: vcard.fn.first.values[0])).order('date DESC, id DESC').all
           end
 
           if filters["types"].nil? || (filters["types"] && filters["types"].include?("voipms_sms"))
-            voipms_sms_messages = VoipmsSms.where(contact: phone_numbers).or(VoipmsSms.where(real_name: vcard.fn.first.values[0])).order('date DESC').all
+            voipms_sms_messages = VoipmsSms.where(contact: phone_numbers).or(VoipmsSms.where(real_name: vcard.fn.first.values[0])).order('date DESC, id DESC').all
           end
 
           if filters["types"].nil? || (filters["types"] && filters["types"].include?("windows_phone_sms"))
-            windows_phone_sms_messages = WindowsPhoneSms.where(real_name: vcard.fn.first.values[0]).order('timestamp DESC').all
+            windows_phone_sms_messages = WindowsPhoneSms.where(real_name: vcard.fn.first.values[0]).order('timestamp DESC, id DESC').all
           end
 
           if filters["types"].nil? || (filters["types"] && filters["types"].include?("facebook_message"))
@@ -370,11 +370,11 @@ class ProfilesController < ApplicationController
           end
 
           if filters["types"].nil? || (filters["types"] && filters["types"].include?("google_chat_message"))
-            google_chat_messages = GoogleChatMessage.where(room: vcard.fn.first.values[0], enabled: true).order('created_date DESC').all
+            google_chat_messages = GoogleChatMessage.where(room: vcard.fn.first.values[0], enabled: true).order('created_date DESC, id DESC').all
           end
 
           if filters["types"].nil? || (filters["types"] && filters["types"].include?("google_talk_message"))
-            google_talk_messages = GoogleTalkMessage.where(room: vcard.fn.first.values[0], enabled: true).order('timestamp DESC').all
+            google_talk_messages = GoogleTalkMessage.where(room: vcard.fn.first.values[0], enabled: true).order('timestamp DESC, id DESC').all
           end
 
           if vcard.fn.first.values[0].start_with?('#') # Group Chat
@@ -382,37 +382,37 @@ class ProfilesController < ApplicationController
             
             # This is IRC - room names start with a # anyhow.
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("mamirc_event"))
-              mamirc_events = MamircEvent.where(real_sender: vcard.fn.first.values[0], enabled: true).or(MamircEvent.where(real_receiver: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC').all
+              mamirc_events = MamircEvent.where(real_sender: vcard.fn.first.values[0], enabled: true).or(MamircEvent.where(real_receiver: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC, id DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("xchat_log"))
-              xchat_logs = XchatLog.where(room: vcard.fn.first.values[0], enabled: true).or(XchatLog.where(real_sender: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC').all
+              xchat_logs = XchatLog.where(room: vcard.fn.first.values[0], enabled: true).or(XchatLog.where(real_sender: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC, id DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("mirc_log"))
-              mirc_logs = MircLog.where(room: vcard.fn.first.values[0], enabled: true).or(MircLog.where(real_sender: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC').all
+              mirc_logs = MircLog.where(room: vcard.fn.first.values[0], enabled: true).or(MircLog.where(real_sender: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC, id DESC').all
             end
   
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("colloquy_message"))
-              colloquy_messages = ColloquyMessage.where(real_sender: vcard.fn.first.values[0], enabled: true).or(ColloquyMessage.where(real_receiver: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC').all
+              colloquy_messages = ColloquyMessage.where(real_sender: vcard.fn.first.values[0], enabled: true).or(ColloquyMessage.where(real_receiver: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC, id DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("lounge_log"))
-              lounge_logs = LoungeLog.where(room: vcard.fn.first.values[0], enabled: true).or(LoungeLog.where(real_sender: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC').all
+              lounge_logs = LoungeLog.where(room: vcard.fn.first.values[0], enabled: true).or(LoungeLog.where(real_sender: vcard.fn.first.values[0], enabled: true)).order('timestamp DESC, id DESC').all
             end
 
             # Not IRC - ignore the #
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("microsoft_teams_message"))
               microsoft_teams_conversations = MicrosoftTeamsConversation.where(display_name: room_name).pluck(:conversation_id)
-              microsoft_teams_messages = MicrosoftTeamsMessage.where(conversation_id: microsoft_teams_conversations, enabled: true).order('original_arrival_time DESC').all
+              microsoft_teams_messages = MicrosoftTeamsMessage.where(conversation_id: microsoft_teams_conversations, enabled: true).order('original_arrival_time DESC, id DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("adium_message"))
-              adium_messages = AdiumMessage.where(enabled: true, real_sender: room_name).or(AdiumMessage.where(enabled: true, real_receiver: room_name)).order('timestamp DESC').all
+              adium_messages = AdiumMessage.where(enabled: true, real_sender: room_name).or(AdiumMessage.where(enabled: true, real_receiver: room_name)).order('timestamp DESC, id DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("pidgin_message"))
-              pidgin_messages = PidginMessage.where(enabled: true, real_sender: room_name).or(PidginMessage.where(enabled: true, real_receiver: room_name)).order('timestamp DESC').all
+              pidgin_messages = PidginMessage.where(enabled: true, real_sender: room_name).or(PidginMessage.where(enabled: true, real_receiver: room_name)).order('timestamp DESC, id DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("discord_message"))
@@ -421,12 +421,12 @@ class ProfilesController < ApplicationController
                 discord_channels << c.channel_id.to_s                
               end
 
-              discord_messages = DiscordMessage.where(discord_channel_id: discord_channels).order('timestamp DESC').all
+              discord_messages = DiscordMessage.where(discord_channel_id: discord_channels).order('timestamp DESC, id DESC').all
             end
           
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("matrix_event"))
               matrix_rooms = (MatrixRoom.where(enabled: [true, nil], name: room_name).pluck(:room_id) + MatrixRoom.where(enabled: [true, nil], name: vcard.fn.first.values[0]).pluck(:room_id)).uniq
-              matrix_events = MatrixEvent.where(room_id: matrix_rooms, event_type: 'm.room.message').order('origin_server_ts DESC').all
+              matrix_events = MatrixEvent.where(room_id: matrix_rooms, event_type: 'm.room.message').order('origin_server_ts DESC, id DESC').all
             end
           else
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("matrix_event"))
@@ -440,44 +440,44 @@ class ProfilesController < ApplicationController
                 end
               end
 
-              matrix_events = MatrixEvent.where(room_id: matrix_rooms, event_type: 'm.room.message').order('origin_server_ts DESC').all
+              matrix_events = MatrixEvent.where(room_id: matrix_rooms, event_type: 'm.room.message').order('origin_server_ts DESC, id DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("mamirc_event"))
-              mamirc_events = MamircEvent.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(MamircEvent.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
+              mamirc_events = MamircEvent.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(MamircEvent.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC, id DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("skype_message"))
-              skype_messages = SkypeMessage.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(SkypeMessage.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
+              skype_messages = SkypeMessage.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(SkypeMessage.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC, id DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("microsoft_teams_message"))
               microsoft_teams_conversations = MicrosoftTeamsConversation.where(display_name: vcard.fn.first.values[0]).pluck(:conversation_id)
-              microsoft_teams_messages = MicrosoftTeamsMessage.where(conversation_id: microsoft_teams_conversations, enabled: true).order('original_arrival_time DESC').all
+              microsoft_teams_messages = MicrosoftTeamsMessage.where(conversation_id: microsoft_teams_conversations, enabled: true).order('original_arrival_time DESC, id DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("xchat_log"))
-              xchat_logs = XchatLog.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(XchatLog.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
+              xchat_logs = XchatLog.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(XchatLog.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC, id DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("lounge_log"))
-              lounge_logs = LoungeLog.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(LoungeLog.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
+              lounge_logs = LoungeLog.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(LoungeLog.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC, id DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("mirc_log"))
-              mirc_logs = MircLog.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(MircLog.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
+              mirc_logs = MircLog.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(MircLog.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC, id DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("pidgin_message"))
-              pidgin_messages = PidginMessage.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(PidginMessage.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
+              pidgin_messages = PidginMessage.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(PidginMessage.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC, id DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("adium_message"))
-              adium_messages = AdiumMessage.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(AdiumMessage.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
+              adium_messages = AdiumMessage.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(AdiumMessage.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC, id DESC').all
             end
 
             if filters["types"].nil? || (filters["types"] && filters["types"].include?("colloquy_message"))
-              colloquy_messages = ColloquyMessage.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(ColloquyMessage.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC').all
+              colloquy_messages = ColloquyMessage.where(real_sender: vcard.fn.first.values[0], real_receiver: SocialLink::Application.credentials.my_name, enabled: true).or(ColloquyMessage.where(real_receiver: vcard.fn.first.values[0], real_sender: SocialLink::Application.credentials.my_name, enabled: true)).order('timestamp DESC, id DESC').all
             end
           end
 
