@@ -1,9 +1,5 @@
-<% if !defined?(person) # Used by Hindsight %>
-  <% ma = MastodonAccount.where(user_id: post[:content][:user_id]).first %>
-  <% media_path = ApplicationController::SOCIALLINK_BASE_MEDIA_URL + "/media/#{person[:name]}/Mastodon/#{ma.username}/" %>
-<% else # Used by SocialLink %>
-  <% media_path = ApplicationController::SOCIALLINK_BASE_MEDIA_URL + "/media/#{snpc.name}/Mastodon/#{snpc.username}/" %>
-<% end %>
+<% ma = MastodonAccount.where(user_id: post[:content][:user_id]).first %>
+<% media_path = ApplicationController::SOCIALLINK_BASE_MEDIA_URL + "/media/#{ma.full_name}/Mastodon/#{ma.username}/" %>
 
 <% if post[:content][:reblog].nil? %>
   <%= post[:content][:content].html_safe %>
