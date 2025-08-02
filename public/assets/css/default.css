@@ -122,9 +122,9 @@ section > a > svg.fa-angle-left {font-size: 40px}
     
     .services {
       list-style-type: none;  
-      padding-left: 20px;
+      padding-left: 10px;
       
-      ul {padding-left: 0}
+      & ul {padding-left: 15px}
 
       * {
         list-style-type: none;
@@ -198,7 +198,7 @@ section > a > svg.fa-angle-left {font-size: 40px}
               font-size: 12px;
             }
           }
-          .pixiv, .colloquy, .mamirc, .pidgin {width: 24px; margin-left: 5px}
+          .colloquy, .mamirc, .pidgin {width: 24px; margin-left: 5px}
           .youtube-shorts, .mirc {width: 15px; margin-left: 5px}
           .hangouts {width: 20px; height: 20px; margin-left: 5px}
           .ms-teams {width: 26px; height: 26px; margin-left: 5px}
@@ -206,7 +206,6 @@ section > a > svg.fa-angle-left {font-size: 40px}
           .google-chat {width: 15px; margin-left: 5px; filter: grayscale(100%);}
           .xchat {width: 15px; height: 15px; margin-left: 5px; filter: grayscale(100%)}
           .lounge {width: 24px; margin-left: 5px; height: 24px}
-          .skype {width: 24px; margin-left: 5px; height: 24px}
           .fa-deviantart {margin-left: 10px}
           .ao3 {width: 24px}
         }
