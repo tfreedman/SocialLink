@@ -167,7 +167,7 @@ class ProfilesController < ApplicationController
         matrix_rooms = []
         
         if filters["types"].nil? || (filters["types"] && filters["types"].include?("webcomics_strip"))
-          webcomics_strips = Webcomic.where(comic: webcomics, parsed: true).all
+          webcomics_strips = Webcomic.where(comic: webcomics, parsed: true, enabled: true).all
         end
         
         if filters["types"].nil? || (filters["types"] && filters["types"].include?("youtube_video"))
