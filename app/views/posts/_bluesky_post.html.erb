@@ -1,3 +1,9 @@
+<% if defined?(snpc) # Used by Hindsight %>
+  <% media_path = ApplicationController::SOCIALLINK_BASE_MEDIA_URL + "/media/#{snpc.name}/Bluesky/#{snpc.username}/" %>
+<% else # Used by SocialLink %>
+  <% media_path = ApplicationController::SOCIALLINK_BASE_MEDIA_URL + "/media/#{person[:name]}/Bluesky/#{BlueskyAccount.where(did: post[:content][:user_did]).first.username}/" %>
+<% end %>
+
 <% if record.nil? # Zero levels deep %>
   <% record = post[:content][:record] %>
   <% reason = post[:content][:reason] %>
@@ -51,7 +57,7 @@
         <% if post[:content][:filenames][image_name].nil? %> 
           <% image_url = "https://cdn.bsky.app/img/feed_fullsize/plain/#{post[:content][:author]['did']}/#{image_name}/@jpeg" %>
         <% else %>
-          <% image_url = "/media/#{person[:name]}/Bluesky/#{BlueskyAccount.where(did: post[:content][:user_did]).first.username}/#{post[:content][:filenames][image_name]}" %>
+          <% image_url = media_path + post[:content][:filenames][image_name] %>
         <% end %>
         <a href="<%= image_url %>" data-fancybox="bluesky_<%= post[:content][:uri].split('/')[-1] %>">
           <img src="<%= image_url %>" alt="<%= image['alt'] %>" />
